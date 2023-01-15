@@ -252,7 +252,7 @@ class DreamBoothTrainer(tf.keras.Model):
     def compute_loss(self, target, model_pred):
         # Chunk the noise and model_pred into two parts and compute the loss on each part separately.
         model_pred, model_pred_prior = tf.split(model_pred, num_or_size_splits=2, axis=0)
-        target, target_prior = tf.chunk(target, num_or_size_splits=2, axis=0)
+        target, target_prior = tf.split(target, num_or_size_splits=2, axis=0)
 
         # Compute instance loss.
         loss = self.compiled_loss(target, model_pred)
