@@ -99,7 +99,6 @@ augmenter = keras_cv.layers.Augmenter(
 
 
 def process_image(image_path, tokenized_text):
-    print(image_path)
     image = tf.io.read_file(image_path)
     image = tf.io.decode_png(image, 3)
     image = tf.image.resize(image, (RESOLUTION, RESOLUTION))
