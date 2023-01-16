@@ -39,7 +39,7 @@ def get_optimizer(
     return optimizer
 
 
-def prepare_trainer(img_resolution):
+def prepare_trainer(img_resolution, use_mp):
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
@@ -55,17 +55,17 @@ def prepare_trainer(img_resolution):
             image_encoder.layers[-2].output,
         ),
         noise_scheduler=NoiseScheduler(),
-        use_mixed_precision=USE_MP,
+        use_mixed_precision=use_mp,
     )
 
     optimizer = get_optimizer()
     dreambooth_trainer.compile(optimizer=optimizer, loss="mse")
     print("DreamBooth trainer initialized and compiled.")
 
-    return dreambooth
+    return dreambooth_trainer
 
 
-def train(dreambooth, train_dataset, ckpt_path, max_train_steps):
+def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
@@ -109,7 +109,7 @@ def parse_args():
     parser.add_argument("--epsilon", default=1e-08, type=float)
     # Training hyperparameters.
     parser.add_argument("--max_train_steps", default=800, type=int)
-    # Others.
+    # Mixed precision enabler.
     parser.add_argument(
         "--mp", action="store_true", help="Whether to use mixed-precision."
     )
@@ -132,11 +132,11 @@ def run(args):
 
     print("Initializing trainer...")
     ckpt_path = "dreambooth-{epoch:02d}-{loss:.2f}.h5"
-    dreambooth = prepare_trainer(
+    dreambooth_trainer = prepare_trainer(
         args.img_resolution, args.mp
     )
 
-    train(dreambooth, train_dataset, ckpt_path, args.max_train_steps)
+    train(dreambooth_trainer, train_dataset, ckpt_path, args.max_train_steps)
 
 
 if __name__ == "__main__":
