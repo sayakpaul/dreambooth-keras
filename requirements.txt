@@ -1,4 +1,5 @@
 keras_cv==0.4.0
 tensorflow>=2.10.0
+tensorflow_datasets
 imutils
 opencv-python
