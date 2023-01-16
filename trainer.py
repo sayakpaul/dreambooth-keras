@@ -18,7 +18,7 @@ from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 
 from dreambooth import DreamBoothTrainer
 from datasets import prepare_datasets
-from constants import MAX_PROMPT_LENGTH, USE_MP
+from constants import MAX_PROMPT_LENGTH
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
