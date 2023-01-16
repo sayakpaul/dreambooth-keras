@@ -18,7 +18,7 @@ from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 
 from dreambooth import DreamBoothTrainer
 from datasets import prepare_datasets
-from constants import RESOLUTION, MAX_PROMPT_LENGTH, USE_MP
+from constants import MAX_PROMPT_LENGTH, USE_MP
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
@@ -127,7 +127,7 @@ def run(args):
     print("Initializing dataset...")
     train_dataset = prepare_datasets(
         args.instance_images_url, args.class_images_url,
-        args.unique_id, args.class_category
+        args.unique_id, args.class_category,
     )
 
     print("Initializing trainer...")
