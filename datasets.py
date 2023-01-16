@@ -1,3 +1,6 @@
+import itertools
+
+import numpy as np
 import tensorflow as tf
 from imutils import paths
 from keras_cv.models.stable_diffusion.clip_tokenizer import SimpleTokenizer
@@ -46,6 +49,7 @@ def get_embedded_text(
     text_encoder = TextEncoder(MAX_PROMPT_LENGTH)
 
     gpus = tf.config.list_logical_devices("GPU")
+    assert len(gpus) > 0
 
     # Ensure the computation takes place on a GPU.
     with tf.device(gpus[0].name):
@@ -123,7 +127,7 @@ def assemble_dataset(image_paths, embedded_texts, instance_only=True, batch_size
 
 
 def prepare_datasets(
-    instance_imgs_url, class_imgs_url
+    instance_imgs_url, class_imgs_url,
     unique_id, class_category
 ):
     instance_image_paths, class_image_paths = download_images(
