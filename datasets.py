@@ -1,7 +1,9 @@
+import logging
 import itertools
 
 import numpy as np
 import tensorflow as tf
+import keras_cv
 from imutils import paths
 from keras_cv.models.stable_diffusion.clip_tokenizer import SimpleTokenizer
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
@@ -10,30 +12,38 @@ from constants import PADDING_TOKEN, MAX_PROMPT_LENGTH, RESOLUTION, AUTO
 # Load the tokenizer.
 tokenizer = SimpleTokenizer()
 
+augmenter = keras_cv.layers.Augmenter(
+    layers=[
+        keras_cv.layers.CenterCrop(RESOLUTION, RESOLUTION),
+        keras_cv.layers.RandomFlip(),
+        tf.keras.layers.Rescaling(scale=1.0 / 127.5, offset=-1),
+    ]
+)
+
 def process_text(caption):
     tokens = tokenizer.encode(caption)
     tokens = tokens + [PADDING_TOKEN] * (MAX_PROMPT_LENGTH - len(tokens))
     return np.array(tokens)
 
 def get_prompts(
-    instance_image_paths, class_image_paths,
+    num_instance_images, num_class_images,
     unique_id, class_category
 ):
     instance_prompt = f"a photo of {unique_id} {class_category}"
-    instance_prompts = [instance_prompt] * len(instance_image_paths)
+    instance_prompts = [instance_prompt] * num_instance_images
 
     class_prompt = f"a photo of {class_category}"
-    class_prompts = [class_prompt] * len(class_image_paths)
+    class_prompts = [class_prompt] * num_class_images
 
     return instance_prompts, class_prompts
 
 
 def get_embedded_text(
-    instance_image_paths, class_image_paths,
+    num_instance_images, num_class_images,
     unique_id, class_category
 ):
     instance_prompts, class_prompts = get_prompts(
-        instance_image_paths, class_image_paths,
+        num_instance_images, num_class_images,
         unique_id, class_category
     )
 
@@ -48,14 +58,9 @@ def get_embedded_text(
     POS_IDS = tf.convert_to_tensor([list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32)
     text_encoder = TextEncoder(MAX_PROMPT_LENGTH)
 
-    gpus = tf.config.list_logical_devices("GPU")
-    assert len(gpus) > 0
-
-    # Ensure the computation takes place on a GPU.
-    with tf.device(gpus[0].name):
-        embedded_text = text_encoder(
-            [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
-        ).numpy()
+    embedded_text = text_encoder(
+        [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
+    ).numpy()
 
     return embedded_text
 
@@ -127,26 +132,28 @@ def assemble_dataset(image_paths, embedded_texts, instance_only=True, batch_size
 
 
 def prepare_datasets(
-    instance_imgs_url, class_imgs_url,
+    instance_images_url, class_images_url,
     unique_id, class_category
 ):
+    print("downloading instance and class images")
     instance_image_paths, class_image_paths = download_images(
-        instance_imgs_url, class_imgs_url
+        instance_images_url, class_images_url
     )
 
+    print("preparing embeded text via TextEncoder")
     embedded_text = get_embedded_text(
-        instance_image_paths, class_image_paths,
+        len(instance_image_paths), len(class_image_paths),
         unique_id, class_category
     )
 
-    num_instance_images = len(instance_image_paths)
+    print("assembling instance and class dataset")
     instance_dataset = assemble_dataset(
         instance_image_paths,
-        embedded_text[: num_instance_images],
+        embedded_text[: len(instance_image_paths)],
     )
     class_dataset = assemble_dataset(
         class_image_paths, 
-        embedded_text[num_instance_images :], 
+        embedded_text[len(instance_image_paths) :], 
         instance_only=False
     )
 
