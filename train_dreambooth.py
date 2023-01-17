@@ -16,7 +16,7 @@ from keras_cv.models.stable_diffusion.diffusion_model import DiffusionModel
 from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 
-from dreambooth import DreamBoothTrainer
+from dreambooth_trainer import DreamBoothTrainer
 from datasets import DatasetUtils
 
 MAX_PROMPT_LENGTH = 77
