@@ -153,8 +153,8 @@ class DatasetUtils:
 
     def _prepare_dict(self, instance_only=True) -> Callable:
         """
-        get a function that returns a dictionary with an appropriate
-        format for instance and class datasets
+        Returns a function that returns a dictionary with an appropriate
+        format for instance and class datasets.
         """
 
         def fn(image_batch, embedded_tokens) -> Dict[str, tf.Tensor]:
