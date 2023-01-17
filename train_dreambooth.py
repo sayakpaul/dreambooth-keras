@@ -17,8 +17,9 @@ from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 
 from dreambooth import DreamBoothTrainer
-from datasets import prepare_datasets
-from constants import MAX_PROMPT_LENGTH
+from datasets import DatasetUtils
+
+MAX_PROMPT_LENGTH = 77
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
@@ -131,10 +132,13 @@ def run(args):
         assert policy.variable_dtype == "float32"
 
     print("Initializing dataset...")
-    train_dataset = prepare_datasets(
-        args.instance_images_url, args.class_images_url,
-        args.unique_id, args.class_category,
+    data_util = DatasetUtils(
+        args.instance_images_url,
+        args.class_images_url,
+        args.unique_id,
+        args.class_category
     )
+    train_dataset = data_util.prepare_datasets()
 
     print("Initializing trainer...")
     ckpt_path = "dreambooth-{epoch:02d}-{loss:.2f}.h5"
