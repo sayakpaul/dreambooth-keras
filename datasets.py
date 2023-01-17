@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Callable
+from typing import List, Dict, Tuple, Callable
 
 import logging
 import itertools
@@ -46,7 +46,7 @@ class DatasetUtils:
             ]
         )
 
-    def _process_text(self, caption) -> np.ndarray::
+    def _process_text(self, caption) -> np.ndarray:
         """tokenize the caption"""
 
         tokens = self.tokenizer.encode(caption)
@@ -77,7 +77,6 @@ class DatasetUtils:
 
         instance_captions, class_captions = self._get_captions(
             num_instance_images, num_class_images,
-            unique_id, class_category
         )
 
         # Collate the tokenized captions into an array.
@@ -86,10 +85,14 @@ class DatasetUtils:
         )
         for i, caption in enumerate(itertools.chain(instance_captions, class_captions)):
             tokenized_texts[i] = self._process_text(caption)
-        
-        embedded_text = self.text_encoder(
-            [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
-        ).numpy()
+
+        gpus = tf.config.list_logical_devices("GPU")
+
+        # Ensure the computation takes place on a GPU.
+        with tf.device(gpus[0].name):
+            embedded_text = self.text_encoder(
+                [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
+            ).numpy()
 
         return embedded_text
 
@@ -148,13 +151,13 @@ class DatasetUtils:
         return self.augmenter(image_batch), embedded_tokens
 
 
-    def _prepare_dict(self, instance_only=True) -> Callable
+    def _prepare_dict(self, instance_only=True) -> Callable:
         """
         get a function that returns a dictionary with an appropriate
         format for instance and class datasets
         """
 
-        def fn(image_batch, embedded_tokens) -> Dict[str, tf.Tensor]::
+        def fn(image_batch, embedded_tokens) -> Dict[str, tf.Tensor]:
             if instance_only:
                 batch_dict = {
                     "instance_images": image_batch,
