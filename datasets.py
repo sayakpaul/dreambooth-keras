@@ -34,18 +34,18 @@ class DatasetUtils:
         img_width: int = 512,
         batch_size: int = 1
     ):
-    """
-    Args:
-        instance_images_url: URL of a compressed file which contains
-        a set of instance images.
-        class_images_url: URL of a compressed file which contains a
-        set of class images.
-        unique_id: unique identifier to represent a new concept/instance.
-        for instance, the typically used unique_id is "sks" in DreamBooth.
-        class_category: a class of concept which the unique_id belongs
-        to. For instance, if unique_id represents a specific dog, class_
-        category should be "dog".
-    """
+        """
+        Args:
+            instance_images_url: URL of a compressed file which contains
+            a set of instance images.
+            class_images_url: URL of a compressed file which contains a
+            set of class images.
+            unique_id: unique identifier to represent a new concept/instance.
+            for instance, the typically used unique_id is "sks" in DreamBooth.
+            class_category: a class of concept which the unique_id belongs
+            to. For instance, if unique_id represents a specific dog, class_
+            category should be "dog".
+        """
 
         self.instance_images_url = instance_images_url
         self.class_images_url = class_images_url
@@ -114,8 +114,8 @@ class DatasetUtils:
                 [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
             ).numpy()
 
-del self.text_encoder
-return embedded_text
+        del self.text_encoder
+        return embedded_text
 
     def _collate_instance_image_paths(
         self,
