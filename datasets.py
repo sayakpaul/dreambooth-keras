@@ -73,7 +73,7 @@ class DatasetUtils:
         num_instance_images, 
         num_class_images
     ) -> np.ndarray:
-        """get embedded text for each caption with TextEncoder"""
+        """Embeds captions with `TextEncoder`."""
 
         instance_captions, class_captions = self._get_captions(
             num_instance_images, num_class_images,
