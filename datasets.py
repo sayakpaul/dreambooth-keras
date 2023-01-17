@@ -58,7 +58,7 @@ class DatasetUtils:
         num_instance_images, 
         num_class_images,
     ) -> Tuple[List, List]:
-        """prepare captions for instance and class images"""
+        """Prepares captions for instance and class images."""
 
         instance_caption = f"a photo of {self.unique_id} {self.class_category}"
         instance_captions = [instance_caption] * num_instance_images
