@@ -192,7 +192,7 @@ class DatasetUtils:
 
 
     def prepare_datasets(self) -> tf.data.Dataset:
-        """get tf.data of zipped instance and class datasets"""
+        """Prepares dataset for DreamBooth training."""
 
         print("downloading instance and class images")
         instance_image_paths, class_image_paths = self._download_images()
