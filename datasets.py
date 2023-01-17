@@ -41,10 +41,10 @@ class DatasetUtils:
         class_images_url: URL of a compressed file which contains a
         set of class images.
         unique_id: unique identifier to represent a new concept/instance.
-        for instance, typically used unique_id is "sks" in dream booth.
-        class_category: a class of concept where the unique_id belongs
+        for instance, the typically used unique_id is "sks" in DreamBooth.
+        class_category: a class of concept which the unique_id belongs
         to. For instance, if unique_id represents a specific dog, class_
-        categoryshould be "dog".
+        category should be "dog".
     """
 
         self.instance_images_url = instance_images_url
