@@ -42,7 +42,7 @@ def get_optimizer(
 
 
 def prepare_trainer(img_resolution, use_mp):
-    """instantiate and prepare DreamBoothTrainer for training"""
+    """Instantiates and compiles `DreamBoothTrainer` for training."""
 
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
