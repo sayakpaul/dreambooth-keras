@@ -70,7 +70,7 @@ def prepare_trainer(img_resolution, use_mp):
 
 
 def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
-    """training DreamBoothTrainer with the given train_dataset"""
+    """Performs DreamBooth training `DreamBoothTrainer` with the given `train_dataset`."""
 
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
