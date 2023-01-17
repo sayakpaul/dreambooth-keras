@@ -133,7 +133,7 @@ class DatasetUtils:
         image_path, 
         tokenized_text
     ) -> Tuple[tf.Tensor, tf.Tensor]:
-        """read image file and scale"""
+        """Reads an image file and scales it."""
 
         image = tf.io.read_file(image_path)
         image = tf.io.decode_png(image, 3)
