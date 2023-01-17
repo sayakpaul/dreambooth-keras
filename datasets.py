@@ -216,4 +216,4 @@ class DatasetUtils:
         train_dataset = tf.data.Dataset.zip(
             (instance_dataset, class_dataset)
         )
-        return train_dataset
+        return train_dataset.prefetch(AUTO)
