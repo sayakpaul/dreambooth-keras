@@ -114,7 +114,8 @@ class DatasetUtils:
                 [tf.convert_to_tensor(tokenized_texts), POS_IDS], training=False
             ).numpy()
 
-        return embedded_text
+del self.text_encoder
+return embedded_text
 
     def _collate_instance_image_paths(
         self,
