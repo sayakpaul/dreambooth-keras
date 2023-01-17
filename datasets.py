@@ -101,7 +101,7 @@ class DatasetUtils:
         instance_image_paths, 
         class_image_paths
     ) -> List:
-        """make instance_image_paths's length equal to the length of class_image_paths"""
+        """Makes `instance_image_paths`'s length equal to the length of `class_image_paths`."""
 
         new_instance_image_paths = []
         for index in range(len(class_image_paths)):
