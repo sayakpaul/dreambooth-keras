@@ -28,6 +28,8 @@ def get_optimizer(
     weight_decay=(1e-2,),
     epsilon=1e-08
 ):
+    """instantiate AdamW optimizer"""
+
     optimizer = tf.keras.optimizers.experimental.AdamW(
         learning_rate=lr,
         weight_decay=weight_decay,
@@ -40,6 +42,8 @@ def get_optimizer(
 
 
 def prepare_trainer(img_resolution, use_mp):
+    """instantiate and prepare DreamBoothTrainer for training"""
+
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
@@ -66,6 +70,8 @@ def prepare_trainer(img_resolution, use_mp):
 
 
 def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
+    """training DreamBoothTrainer with the given train_dataset"""
+
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")

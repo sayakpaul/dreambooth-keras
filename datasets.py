@@ -7,10 +7,9 @@ import keras_cv
 from imutils import paths
 from keras_cv.models.stable_diffusion.clip_tokenizer import SimpleTokenizer
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
-from constants import PADDING_TOKEN, MAX_PROMPT_LENGTH, RESOLUTION, AUTO
+from constants import PADDING_TOKEN, MAX_PROMPT_LENGTH, RESOLUTION
 
-# Load the tokenizer.
-tokenizer = SimpleTokenizer()
+AUTO = tf.data.AUTOTUNE
 
 augmenter = keras_cv.layers.Augmenter(
     layers=[
@@ -21,37 +20,45 @@ augmenter = keras_cv.layers.Augmenter(
 )
 
 def process_text(caption):
+    """tokenize the caption"""
+
+    tokenizer = SimpleTokenizer()
+
     tokens = tokenizer.encode(caption)
     tokens = tokens + [PADDING_TOKEN] * (MAX_PROMPT_LENGTH - len(tokens))
     return np.array(tokens)
 
-def get_prompts(
+def get_captions(
     num_instance_images, num_class_images,
     unique_id, class_category
 ):
-    instance_prompt = f"a photo of {unique_id} {class_category}"
-    instance_prompts = [instance_prompt] * num_instance_images
+    """prepare captions for instance and class images"""
 
-    class_prompt = f"a photo of {class_category}"
-    class_prompts = [class_prompt] * num_class_images
+    instance_caption = f"a photo of {unique_id} {class_category}"
+    instance_captions = [instance_caption] * num_instance_images
 
-    return instance_prompts, class_prompts
+    class_caption = f"a photo of {class_category}"
+    class_captions = [class_caption] * num_class_images
+
+    return instance_captions, class_captions
 
 
-def get_embedded_text(
+def get_embedded_caption(
     num_instance_images, num_class_images,
     unique_id, class_category
 ):
-    instance_prompts, class_prompts = get_prompts(
+    """get embedded text for each caption with TextEncoder"""
+
+    instance_captions, class_captions = get_captions(
         num_instance_images, num_class_images,
         unique_id, class_category
     )
 
     # Collate the tokenized captions into an array.
     tokenized_texts = np.empty(
-        (len(instance_prompts) + len(class_prompts), MAX_PROMPT_LENGTH)
+        (num_instance_images + num_class_images, MAX_PROMPT_LENGTH)
     )
-    for i, caption in enumerate(itertools.chain(instance_prompts, class_prompts)):
+    for i, caption in enumerate(itertools.chain(instance_captions, class_captions)):
         tokenized_texts[i] = process_text(caption)
 
     # We also pre-compute the text embeddings to save some memory during training.
@@ -65,6 +72,8 @@ def get_embedded_text(
     return embedded_text
 
 def collate_instance_image_paths(instance_image_paths, class_image_paths):
+    """make instance_image_paths's length equal to the length of class_image_paths"""
+
     new_instance_image_paths = []
     for index in range(len(class_image_paths)):
         instance_image = instance_image_paths[index % len(instance_image_paths)]
@@ -76,6 +85,8 @@ def download_images(
     instance_images_url,
     class_images_url
 ):
+    """download instance and class images(compressed) from the urls"""
+
     instance_images_root = tf.keras.utils.get_file(
         origin=instance_images_url, untar=True,
     )
@@ -91,6 +102,8 @@ def download_images(
 
 
 def process_image(image_path, tokenized_text):
+    """read image file and scale"""
+
     image = tf.io.read_file(image_path)
     image = tf.io.decode_png(image, 3)
     image = tf.image.resize(image, (RESOLUTION, RESOLUTION))
@@ -98,10 +111,17 @@ def process_image(image_path, tokenized_text):
 
 
 def apply_augmentation(image_batch, embedded_tokens):
+    """apply data augmentation to a batch of images"""
+
     return augmenter(image_batch), embedded_tokens
 
 
 def prepare_dict(instance_only=True):
+    """
+    get a function that returns a dictionary with an appropriate
+    format for instance and class datasets
+    """
+
     def fn(image_batch, embedded_tokens):
         if instance_only:
             batch_dict = {
@@ -135,13 +155,15 @@ def prepare_datasets(
     instance_images_url, class_images_url,
     unique_id, class_category
 ):
+    """get tf.data of zipped instance and class datasets"""
+
     print("downloading instance and class images")
     instance_image_paths, class_image_paths = download_images(
         instance_images_url, class_images_url
     )
 
-    print("preparing embeded text via TextEncoder")
-    embedded_text = get_embedded_text(
+    print("preparing embeded caption via TextEncoder")
+    embedded_text = get_embedded_caption(
         len(instance_image_paths), len(class_image_paths),
         unique_id, class_category
     )
