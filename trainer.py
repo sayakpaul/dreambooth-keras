@@ -28,7 +28,7 @@ def get_optimizer(
     weight_decay=(1e-2,),
     epsilon=1e-08
 ):
-    """instantiate AdamW optimizer"""
+    """Instantiates the AdamW optimizer."""
 
     optimizer = tf.keras.optimizers.experimental.AdamW(
         learning_rate=lr,
