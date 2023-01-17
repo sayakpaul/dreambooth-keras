@@ -16,6 +16,14 @@ POS_IDS = tf.convert_to_tensor([list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32)
 AUTO = tf.data.AUTOTUNE
 
 class DatasetUtils:
+    """
+    DatasetUtils prepares tf.data.Dataset for dream booth. It works 
+    in the following steps. First, it downloads images for instance
+    and class(assuming they are compressed). Second, it prepares a
+    set of embeded text for each images with TextEncoder. Third, it
+    builds tf.data.Dataset of a pair of image and embeded text for
+    instance and class separately. Finally, it zips two Dataset. 
+    """
     def __init__(
         self,
         instance_images_url: str,
@@ -26,6 +34,18 @@ class DatasetUtils:
         img_width: int = 512,
         batch_size: int = 1
     ):
+    """
+    Args:
+        instance_images_url: URL of a compressed file which contains
+        a set of instance images.
+        class_images_url: URL of a compressed file which contains a
+        set of class images.
+        unique_id: unique identifier to represent a new concept/instance.
+        for instance, typically used unique_id is "sks" in dream booth.
+        class_category: a class of concept where the unique_id belongs
+        to. For instance, if unique_id represents a specific dog, class_
+        categoryshould be "dog".
+    """
 
         self.instance_images_url = instance_images_url
         self.class_images_url = class_images_url
