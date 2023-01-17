@@ -146,7 +146,7 @@ class DatasetUtils:
         image_batch, 
         embedded_tokens
     ) -> Tuple[tf.Tensor, tf.Tensor]:
-        """apply data augmentation to a batch of images"""
+        """Applies data augmentation to a batch of images."""
 
         return self.augmenter(image_batch), embedded_tokens
 
