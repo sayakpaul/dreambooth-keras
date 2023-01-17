@@ -47,7 +47,7 @@ class DatasetUtils:
         )
 
     def _process_text(self, caption) -> np.ndarray:
-        """tokenize the caption"""
+        """Tokenizes a given caption."""
 
         tokens = self.tokenizer.encode(caption)
         tokens = tokens + [PADDING_TOKEN] * (MAX_PROMPT_LENGTH - len(tokens))
