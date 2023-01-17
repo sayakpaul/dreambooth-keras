@@ -111,7 +111,7 @@ class DatasetUtils:
         return new_instance_image_paths    
 
     def _download_images(self) -> Tuple[List, List]:
-        """download instance and class images(compressed) from the urls"""
+        """Downloads instance and class image archives from the URLs and un-archives them."""
 
         instance_images_root = tf.keras.utils.get_file(
             origin=self.instance_images_url, untar=True,
