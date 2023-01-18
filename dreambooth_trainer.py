@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow.experimental.numpy as tnp
 
+
 class DreamBoothTrainer(tf.keras.Model):
     # Reference:
     # https://github.com/huggingface/diffusers/blob/main/examples/dreambooth/train_dreambooth.py
@@ -13,7 +14,7 @@ class DreamBoothTrainer(tf.keras.Model):
         use_mixed_precision=False,
         prior_loss_weight=1.0,
         max_grad_norm=1.0,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(**kwargs)
 

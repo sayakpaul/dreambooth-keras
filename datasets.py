@@ -1,38 +1,38 @@
-from typing import List, Dict, Tuple, Callable
-
-import logging
 import itertools
+from typing import Callable, Dict, List, Tuple
 
+import keras_cv
 import numpy as np
 import tensorflow as tf
-import keras_cv
 from imutils import paths
 from keras_cv.models.stable_diffusion.clip_tokenizer import SimpleTokenizer
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
 
-from constants import PADDING_TOKEN, MAX_PROMPT_LENGTH
+from constants import MAX_PROMPT_LENGTH, PADDING_TOKEN
 
 POS_IDS = tf.convert_to_tensor([list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32)
 AUTO = tf.data.AUTOTUNE
 
+
 class DatasetUtils:
     """
-    DatasetUtils prepares tf.data.Dataset for dream booth. It works 
+    DatasetUtils prepares tf.data.Dataset for dream booth. It works
     in the following steps. First, it downloads images for instance
     and class(assuming they are compressed). Second, it prepares a
     set of embeded text for each images with TextEncoder. Third, it
     builds tf.data.Dataset of a pair of image and embeded text for
-    instance and class separately. Finally, it zips two Dataset. 
+    instance and class separately. Finally, it zips two Dataset.
     """
+
     def __init__(
         self,
         instance_images_url: str,
         class_images_url: str,
-        unique_id: str, 
+        unique_id: str,
         class_category: str,
         img_height: int = 512,
         img_width: int = 512,
-        batch_size: int = 1
+        batch_size: int = 1,
     ):
         """
         Args:
@@ -75,7 +75,7 @@ class DatasetUtils:
 
     def _get_captions(
         self,
-        num_instance_images, 
+        num_instance_images,
         num_class_images,
     ) -> Tuple[List, List]:
         """Prepares captions for instance and class images."""
@@ -88,15 +88,12 @@ class DatasetUtils:
 
         return instance_captions, class_captions
 
-    def _get_embedded_caption(
-        self,
-        num_instance_images, 
-        num_class_images
-    ) -> np.ndarray:
+    def _get_embedded_caption(self, num_instance_images, num_class_images) -> np.ndarray:
         """Embeds captions with `TextEncoder`. This is done to save some memory."""
 
         instance_captions, class_captions = self._get_captions(
-            num_instance_images, num_class_images,
+            num_instance_images,
+            num_class_images,
         )
 
         # Collate the tokenized captions into an array.
@@ -118,9 +115,7 @@ class DatasetUtils:
         return embedded_text
 
     def _collate_instance_image_paths(
-        self,
-        instance_image_paths, 
-        class_image_paths
+        self, instance_image_paths, class_image_paths
     ) -> List:
         """Makes `instance_image_paths`'s length equal to the length of `class_image_paths`."""
 
@@ -129,16 +124,18 @@ class DatasetUtils:
             instance_image = instance_image_paths[index % len(instance_image_paths)]
             new_instance_image_paths.append(instance_image)
 
-        return new_instance_image_paths    
+        return new_instance_image_paths
 
     def _download_images(self) -> Tuple[List, List]:
         """Downloads instance and class image archives from the URLs and un-archives them."""
 
         instance_images_root = tf.keras.utils.get_file(
-            origin=self.instance_images_url, untar=True,
+            origin=self.instance_images_url,
+            untar=True,
         )
         class_images_root = tf.keras.utils.get_file(
-            origin=self.class_images_url, untar=True,
+            origin=self.class_images_url,
+            untar=True,
         )
 
         instance_image_paths = list(paths.list_images(instance_images_root))
@@ -149,11 +146,7 @@ class DatasetUtils:
 
         return instance_image_paths, class_image_paths
 
-    def _process_image(
-        self,
-        image_path, 
-        tokenized_text
-    ) -> Tuple[tf.Tensor, tf.Tensor]:
+    def _process_image(self, image_path, tokenized_text) -> Tuple[tf.Tensor, tf.Tensor]:
         """Reads an image file and scales it."""
 
         image = tf.io.read_file(image_path)
@@ -161,16 +154,12 @@ class DatasetUtils:
         image = tf.image.resize(image, (self.img_height, self.img_width))
         return image, tokenized_text
 
-
     def _apply_augmentation(
-        self, 
-        image_batch, 
-        embedded_tokens
+        self, image_batch, embedded_tokens
     ) -> Tuple[tf.Tensor, tf.Tensor]:
         """Applies data augmentation to a batch of images."""
 
         return self.augmenter(image_batch), embedded_tokens
-
 
     def _prepare_dict(self, instance_only=True) -> Callable:
         """
@@ -194,12 +183,8 @@ class DatasetUtils:
 
         return fn
 
-
     def _assemble_dataset(
-        self,
-        image_paths, 
-        embedded_texts, 
-        instance_only=True
+        self, image_paths, embedded_texts, instance_only=True
     ) -> tf.data.Dataset:
         dataset = tf.data.Dataset.from_tensor_slices((image_paths, embedded_texts))
         dataset = dataset.map(self._process_image, num_parallel_calls=AUTO)
@@ -211,7 +196,6 @@ class DatasetUtils:
         dataset = dataset.map(prepare_dict_fn, num_parallel_calls=AUTO)
         return dataset
 
-
     def prepare_datasets(self) -> tf.data.Dataset:
         """Prepares dataset for DreamBooth training."""
 
@@ -220,7 +204,8 @@ class DatasetUtils:
 
         print("preparing embeded caption via TextEncoder")
         embedded_text = self._get_embedded_caption(
-            len(instance_image_paths), len(class_image_paths),
+            len(instance_image_paths),
+            len(class_image_paths),
         )
 
         print("assembling instance and class dataset")
@@ -229,12 +214,10 @@ class DatasetUtils:
             embedded_text[: len(instance_image_paths)],
         )
         class_dataset = self._assemble_dataset(
-            class_image_paths, 
-            embedded_text[len(instance_image_paths) :], 
-            instance_only=False
+            class_image_paths,
+            embedded_text[len(instance_image_paths) :],
+            instance_only=False,
         )
 
-        train_dataset = tf.data.Dataset.zip(
-            (instance_dataset, class_dataset)
-        )
+        train_dataset = tf.data.Dataset.zip((instance_dataset, class_dataset))
         return train_dataset.prefetch(AUTO)
