@@ -5,30 +5,25 @@ warnings.filterwarnings("ignore")
 import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
-import math
 import argparse
+import math
 
 import tensorflow as tf
-from tensorflow.keras import mixed_precision
-
+import wandb
 from keras_cv.models.stable_diffusion.diffusion_model import DiffusionModel
 from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
+from tensorflow.keras import mixed_precision
 
-from dreambooth_trainer import DreamBoothTrainer
-from datasets import DatasetUtils
-
+import utils
 from constants import MAX_PROMPT_LENGTH
+from datasets import DatasetUtils
+from dreambooth_trainer import DreamBoothTrainer
+
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
-def get_optimizer(
-    lr=5e-6, 
-    beta_1=0.9, beta_2=0.999,
-    weight_decay=(1e-2,),
-    epsilon=1e-08
-):
+def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08):
     """Instantiates the AdamW optimizer."""
 
     optimizer = tf.keras.optimizers.experimental.AdamW(
@@ -48,12 +43,8 @@ def prepare_trainer(img_resolution, use_mp):
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
-        diffusion_model=DiffusionModel(
-            img_resolution, 
-            img_resolution, 
-            MAX_PROMPT_LENGTH
-        ),
-        # Remove the top layer from the encoder, which cuts off 
+        diffusion_model=DiffusionModel(img_resolution, img_resolution, MAX_PROMPT_LENGTH),
+        # Remove the top layer from the encoder, which cuts off
         # the variance and only returns the mean.
         vae=tf.keras.Model(
             image_encoder.input,
@@ -83,11 +74,7 @@ def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
         monitor="loss",
         mode="min",
     )
-    dreambooth_trainer.fit(
-        train_dataset, 
-        epochs=epochs, 
-        callbacks=[ckpt_callback]
-    )
+    dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=[ckpt_callback])
 
 
 def parse_args():
@@ -96,14 +83,14 @@ def parse_args():
     )
     # Dataset related.
     parser.add_argument(
-        "--instance_images_url", 
-        default="https://huggingface.co/datasets/sayakpaul/sample-datasets/resolve/main/instance-images.tar.gz", 
-        type=str
+        "--instance_images_url",
+        default="https://huggingface.co/datasets/sayakpaul/sample-datasets/resolve/main/instance-images.tar.gz",
+        type=str,
     )
     parser.add_argument(
-        "--class_images_url", 
+        "--class_images_url",
         default="https://huggingface.co/datasets/sayakpaul/sample-datasets/resolve/main/class-images.tar.gz",
-        type=str
+        type=str,
     )
     parser.add_argument("--unique_id", default="sks", type=str)
     parser.add_argument("--class_category", default="dog", type=str)
@@ -115,13 +102,24 @@ def parse_args():
     parser.add_argument("--beta_2", default=0.999, type=float)
     parser.add_argument("--epsilon", default=1e-08, type=float)
     # Training hyperparameters.
+    parser.add_argument("--batch_size", default=1, type=int)
     parser.add_argument("--max_train_steps", default=800, type=int)
-    # Mixed precision enabler.
+    # Misc.
     parser.add_argument(
         "--mp", action="store_true", help="Whether to use mixed-precision."
     )
+    parser.add_argument(
+        "--log_wandb", action="store_true", help="Whether to use mixed-precision."
+    )
+    parser.add_argument(
+        "--validation_prompt",
+        default=None,
+        type=str,
+        help="Prompt to generate samples for validation purposes.",
+    )
 
     return parser.parse_args()
+
 
 def run(args):
     if args.mp:
@@ -133,22 +131,35 @@ def run(args):
 
     print("Initializing dataset...")
     data_util = DatasetUtils(
-        args.instance_images_url,
-        args.class_images_url,
-        args.unique_id,
-        args.class_category
+        instance_images_url=args.instance_images_url,
+        class_images_url=args.class_images_url,
+        unique_id=args.unique_id,
+        class_category=args.class_category,
+        batch_size=args.batch_size,
     )
     train_dataset = data_util.prepare_datasets()
 
     print("Initializing trainer...")
-    ckpt_path = "dreambooth-{epoch:02d}-{loss:.2f}.h5"
-    dreambooth_trainer = prepare_trainer(
-        args.img_resolution, args.mp
-    )
-
+    ckpt_path = "dreambooth-unet.h5"
+    dreambooth_trainer = prepare_trainer(args.img_resolution, args.mp)
     train(dreambooth_trainer, train_dataset, ckpt_path, args.max_train_steps)
+
+    if args.log_wandb:
+        print("Logging artifacts...")
+        wandb.init(project="dreambooth-keras", config=vars(args))
+        if args.validation_prompt is None:
+            args.validation_prompt = (
+                f"A photo of {args.unique_id} {args.class_category} in a bucket"
+            )
+        utils.log_images(
+            [ckpt_path],
+            img_heigth=args.img_resolution,
+            img_width=args.img_resolution,
+            prompt=args.validation_prompt,
+        )
+        utils.save_ckpts([ckpt_path])
 
 
 if __name__ == "__main__":
     args = parse_args()
-    run(args)    
+    run(args)
