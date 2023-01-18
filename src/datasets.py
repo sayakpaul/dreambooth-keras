@@ -111,11 +111,6 @@ class DatasetUtils:
 
         # Tokenize the captions.
         tokenized_texts = self._tokenize_text_batch(instance_captions, class_captions)
-        tokenized_texts = np.empty(
-            (num_instance_images + num_class_images, MAX_PROMPT_LENGTH)
-        )
-        for i, caption in enumerate(itertools.chain(instance_captions, class_captions)):
-            tokenized_texts[i] = self._process_text(caption)
 
         # Embed the tokenized captions.
         # Ensure the computation takes place on a GPU.
