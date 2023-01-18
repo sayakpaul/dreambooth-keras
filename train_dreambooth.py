@@ -172,6 +172,7 @@ def run(args):
             prompt=args.validation_prompt,
         )
         utils.save_ckpts(ckpt_paths)
+        wandb.finish()
 
 
 if __name__ == "__main__":
