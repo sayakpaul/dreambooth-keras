@@ -8,7 +8,7 @@ from imutils import paths
 from keras_cv.models.stable_diffusion.clip_tokenizer import SimpleTokenizer
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
 
-from constants import MAX_PROMPT_LENGTH, PADDING_TOKEN
+from src.constants import MAX_PROMPT_LENGTH, PADDING_TOKEN
 
 POS_IDS = tf.convert_to_tensor([list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32)
 AUTO = tf.data.AUTOTUNE
