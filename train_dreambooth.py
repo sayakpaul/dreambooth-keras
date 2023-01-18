@@ -164,7 +164,7 @@ def run(args):
 
         ckpt_paths = [dreambooth_trainer.diffusion_model_path]
         if args.train_text_encoder:
-            ckpt_paths.extend(dreambooth_trainer.text_encoder_model_path)
+            ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
         utils.log_images(
             ckpt_paths,
             img_heigth=args.img_resolution,
