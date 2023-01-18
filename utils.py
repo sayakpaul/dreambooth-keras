@@ -3,7 +3,7 @@ import PIL
 import wandb
 
 
-def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen):
+def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
     """Logs generated images to WandB for qualitative validation."""
     print("Performing inference for logging generated images...")
     print(f"Number of images to generate: {num_imgs_to_gen} to prompt: {prompt}")
