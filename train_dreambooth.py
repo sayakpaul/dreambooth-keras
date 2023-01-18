@@ -114,7 +114,7 @@ def parse_args():
     parser.add_argument(
         "--validation_prompt",
         default=None,
-        type="str",
+        type=str,
         help="Prompt to generate samples for validation purposes.",
     )
 
