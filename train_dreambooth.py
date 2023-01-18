@@ -15,10 +15,10 @@ from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 from tensorflow.keras import mixed_precision
 
-import utils
-from constants import MAX_PROMPT_LENGTH
-from datasets import DatasetUtils
-from dreambooth_trainer import DreamBoothTrainer
+from src import utils
+from src.constants import MAX_PROMPT_LENGTH
+from src.datasets import DatasetUtils
+from src.dreambooth_trainer import DreamBoothTrainer
 
 
 # These hyperparameters come from this tutorial by Hugging Face:
