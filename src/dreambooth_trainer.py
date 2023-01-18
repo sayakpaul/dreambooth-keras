@@ -1,5 +1,8 @@
 import tensorflow as tf
 import tensorflow.experimental.numpy as tnp
+from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
+
+from src.constants import MAX_PROMPT_LENGTH
 
 
 class DreamBoothTrainer(tf.keras.Model):
@@ -11,6 +14,7 @@ class DreamBoothTrainer(tf.keras.Model):
         diffusion_model,
         vae,
         noise_scheduler,
+        train_text_encoder,
         use_mixed_precision=False,
         prior_loss_weight=1.0,
         max_grad_norm=1.0,
@@ -21,6 +25,11 @@ class DreamBoothTrainer(tf.keras.Model):
         self.diffusion_model = diffusion_model
         self.vae = vae
         self.noise_scheduler = noise_scheduler
+
+        self.train_text_encoder = train_text_encoder
+        if self.train_text_encoder:
+            self.text_encoder = TextEncoder(MAX_PROMPT_LENGTH)
+
         self.prior_loss_weight = prior_loss_weight
         self.max_grad_norm = max_grad_norm
 
@@ -32,15 +41,21 @@ class DreamBoothTrainer(tf.keras.Model):
         class_batch = inputs[1]
 
         instance_images = instance_batch["instance_images"]
-        instance_embedded_text = instance_batch["instance_embedded_texts"]
+        instance_texts = instance_batch["instance_texts"]
         class_images = class_batch["class_images"]
-        class_embedded_text = class_batch["class_embedded_texts"]
+        class_texts = class_batch["class_texts"]
 
         images = tf.concat([instance_images, class_images], 0)
-        embedded_texts = tf.concat([instance_embedded_text, class_embedded_text], 0)
+        texts = tf.concat(
+            [instance_texts, class_texts], 0
+        )  # `texts` can either be caption tokens or embedded caption tokens.
         batch_size = tf.shape(images)[0]
 
         with tf.GradientTape() as tape:
+            # If the `text_encoder` is being fine-tuned.
+            if self.train_text_encoder:
+                texts = self.text_encoder(texts, training=False)
+
             # Project image into the latent space and sample from it.
             latents = self.sample_from_encoder_outputs(self.vae(images, training=False))
             # Know more about the magic number here:
@@ -70,14 +85,21 @@ class DreamBoothTrainer(tf.keras.Model):
                 lambda t: self.get_timestep_embedding(t), timesteps, dtype=tf.float32
             )
             model_pred = self.diffusion_model(
-                [noisy_latents, timestep_embedding, embedded_texts], training=True
+                [noisy_latents, timestep_embedding, texts], training=True
             )
             loss = self.compute_loss(target, model_pred)
             if self.use_mixed_precision:
                 loss = self.optimizer.get_scaled_loss(loss)
 
         # Update parameters of the diffusion model.
-        trainable_vars = self.diffusion_model.trainable_variables
+        if self.trainable_vars:
+            trainable_vars = (
+                self.text_encoder.trainable_variables
+                + self.diffusion_model.trainable_variables
+            )
+        else:
+            trainable_vars = self.diffusion_model.trainable_variables
+
         gradients = tape.gradient(loss, trainable_vars)
         if self.use_mixed_precision:
             gradients = self.optimizer.get_unscaled_gradients(gradients)
@@ -116,14 +138,26 @@ class DreamBoothTrainer(tf.keras.Model):
         loss = loss + self.prior_loss_weight * prior_loss
         return loss
 
-    def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
+    def save_weights(
+        self, ckpt_path_prefix, overwrite=True, save_format=None, options=None
+    ):
         # Overriding this method will allow us to use the `ModelCheckpoint`
         # callback directly with this trainer class. In this case, it will
-        # only checkpoint the `diffusion_model` since that's what we're training
-        # during fine-tuning.
+        # only checkpoint the `diffusion_model` and optionally the `text_encoder`.
+        diffusion_model_path = ckpt_path_prefix + "-unet.h5"
         self.diffusion_model.save_weights(
-            filepath=filepath,
+            filepath=diffusion_model_path,
             overwrite=overwrite,
             save_format=save_format,
             options=options,
         )
+        self.diffusion_model_path = diffusion_model_path
+        if self.train_text_encoder:
+            text_encoder_model_path = ckpt_path_prefix + "-text_encoder.h5"
+            self.text_encoder.save_weights(
+                filepath=text_encoder_model_path,
+                overwrite=overwrite,
+                save_format=save_format,
+                options=options,
+            )
+            self.text_encoder_model_path = text_encoder_model_path
