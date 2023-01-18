@@ -29,6 +29,10 @@ class DreamBoothTrainer(tf.keras.Model):
         self.train_text_encoder = train_text_encoder
         if self.train_text_encoder:
             self.text_encoder = TextEncoder(MAX_PROMPT_LENGTH)
+            self.text_encoder.trainable = True
+            self.pos_ids = tf.convert_to_tensor(
+                [list(range(MAX_PROMPT_LENGTH))], dtype=tf.int32
+            )
 
         self.prior_loss_weight = prior_loss_weight
         self.max_grad_norm = max_grad_norm
@@ -54,7 +58,7 @@ class DreamBoothTrainer(tf.keras.Model):
         with tf.GradientTape() as tape:
             # If the `text_encoder` is being fine-tuned.
             if self.train_text_encoder:
-                texts = self.text_encoder(texts, training=False)
+                texts = self.text_encoder([texts, self.pos_ids], training=True)
 
             # Project image into the latent space and sample from it.
             latents = self.sample_from_encoder_outputs(self.vae(images, training=False))
