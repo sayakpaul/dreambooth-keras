@@ -9,9 +9,9 @@ def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
     print(f"Number of images to generate: {num_imgs_to_gen} to prompt: {prompt}")
 
     sd_model = keras_cv.models.StableDiffusion(img_height=img_heigth, img_width=img_width)
-    sd_model._diffusion_model.load_weights(ckpt_paths[0])
+    sd_model.diffusion_model.load_weights(ckpt_paths[0])
     if len(ckpt_paths) > 1:
-        sd_model._text_encoder.load_weights(ckpt_paths[1])
+        sd_model.text_encoder.load_weights(ckpt_paths[1])
 
     images_dreamboothed = sd_model.text_to_image(prompt, batch_size=num_imgs_to_gen)
     wandb.log(
