@@ -37,7 +37,9 @@ def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsil
     return optimizer
 
 
-def prepare_trainer(img_resolution: int, use_mp: bool):
+def prepare_trainer(
+    img_resolution: int, train_text_encoder: bool, use_mp: bool, **kwargs
+):
     """Instantiates and compiles `DreamBoothTrainer` for training."""
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
@@ -50,7 +52,9 @@ def prepare_trainer(img_resolution: int, use_mp: bool):
             image_encoder.layers[-2].output,
         ),
         noise_scheduler=NoiseScheduler(),
+        train_text_encoder=train_text_encoder,
         use_mixed_precision=use_mp,
+        **kwargs,
     )
 
     optimizer = get_optimizer()
@@ -145,7 +149,9 @@ def run(args):
 
     print("Initializing trainer...")
     ckpt_path_prefix = "dreambooth"
-    dreambooth_trainer = prepare_trainer(args.img_resolution, args.mp)
+    dreambooth_trainer = prepare_trainer(
+        args.img_resolution, args.train_text_encoder, args.mp
+    )
     train(dreambooth_trainer, train_dataset, ckpt_path_prefix, args.max_train_steps)
 
     if args.log_wandb:
