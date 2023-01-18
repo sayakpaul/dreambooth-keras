@@ -199,16 +199,16 @@ class DatasetUtils:
     def prepare_datasets(self) -> tf.data.Dataset:
         """Prepares dataset for DreamBooth training."""
 
-        print("downloading instance and class images")
+        print("Downloading instance and class images...")
         instance_image_paths, class_image_paths = self._download_images()
 
-        print("preparing embeded caption via TextEncoder")
+        print("Preparing embeded caption via TextEncoder...")
         embedded_text = self._get_embedded_caption(
             len(instance_image_paths),
             len(class_image_paths),
         )
 
-        print("assembling instance and class dataset")
+        print("Assembling instance and class dataset...")
         instance_dataset = self._assemble_dataset(
             instance_image_paths,
             embedded_text[: len(instance_image_paths)],
