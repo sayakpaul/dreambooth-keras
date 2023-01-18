@@ -102,6 +102,7 @@ def parse_args():
     parser.add_argument("--beta_2", default=0.999, type=float)
     parser.add_argument("--epsilon", default=1e-08, type=float)
     # Training hyperparameters.
+    parser.add_argument("--batch_size", default=1, type=int)
     parser.add_argument("--max_train_steps", default=800, type=int)
     # Misc.
     parser.add_argument(
@@ -130,10 +131,11 @@ def run(args):
 
     print("Initializing dataset...")
     data_util = DatasetUtils(
-        args.instance_images_url,
-        args.class_images_url,
-        args.unique_id,
-        args.class_category,
+        instance_images_url=args.instance_images_url,
+        class_images_url=args.class_images_url,
+        unique_id=args.unique_id,
+        class_category=args.class_category,
+        batch_size=args.batch_size,
     )
     train_dataset = data_util.prepare_datasets()
 
