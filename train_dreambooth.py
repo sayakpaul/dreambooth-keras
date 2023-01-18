@@ -138,6 +138,7 @@ def run(args):
         class_images_url=args.class_images_url,
         unique_id=args.unique_id,
         class_category=args.class_category,
+        train_text_encoder=args.train_text_encoder,
         batch_size=args.batch_size,
     )
     train_dataset = data_util.prepare_datasets()
