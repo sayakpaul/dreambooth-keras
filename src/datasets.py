@@ -18,10 +18,10 @@ class DatasetUtils:
     """
     DatasetUtils prepares a `tf.data.Dataset` object for DreamBooth training.
     It works in the following steps. First, it downloads images for instance
-    and class (assuming they are compressed). Second, it embeds the captions
-    associated with the images with `TextEncoder`. Third, it builds `tf.data.Dataset`
-    object of a pair of image and embeded text for instance and class separately.
-    Finally, it zips the two `tf.data.Dataset` objects.
+    and class (assuming they are compressed). Second, it optionally embeds the
+    captions associated with the images with `TextEncoder`. Third, it builds
+    `tf.data.Dataset` object of a pair of image and embeded text for instance
+    and class separately. Finally, it zips the two `tf.data.Dataset` objects.
     """
 
     def __init__(
@@ -214,7 +214,7 @@ class DatasetUtils:
         instance_image_paths, class_image_paths = self._download_images()
 
         # `text_batch` cam either be embedded captions or tokenized captions.
-        if self.train_text_encoder:
+        if not self.train_text_encoder:
             print("Preparing embeded caption via TextEncoder...")
             text_batch = self._get_embedded_captions(
                 len(instance_image_paths),
