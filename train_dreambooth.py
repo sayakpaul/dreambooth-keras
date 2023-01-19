@@ -37,9 +37,10 @@ def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsil
     return optimizer
 
 
-def prepare_trainer(img_resolution, use_mp):
+def prepare_trainer(
+    img_resolution: int, train_text_encoder: bool, use_mp: bool, **kwargs
+):
     """Instantiates and compiles `DreamBoothTrainer` for training."""
-
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
@@ -51,7 +52,9 @@ def prepare_trainer(img_resolution, use_mp):
             image_encoder.layers[-2].output,
         ),
         noise_scheduler=NoiseScheduler(),
+        train_text_encoder=train_text_encoder,
         use_mixed_precision=use_mp,
+        **kwargs,
     )
 
     optimizer = get_optimizer()
@@ -61,15 +64,14 @@ def prepare_trainer(img_resolution, use_mp):
     return dreambooth_trainer
 
 
-def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
+def train(dreambooth_trainer, train_dataset, ckpt_path_prefix, max_train_steps):
     """Performs DreamBooth training `DreamBoothTrainer` with the given `train_dataset`."""
-
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
 
     ckpt_callback = tf.keras.callbacks.ModelCheckpoint(
-        ckpt_path,
+        ckpt_path_prefix,
         save_weights_only=True,
         monitor="loss",
         mode="min",
@@ -79,7 +81,7 @@ def train(dreambooth_trainer, train_dataset, ckpt_path, max_train_steps):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Script to fine-tune a Stable Diffusion model."
+        description="Script to perform DreamBooth training using Stable Diffusion."
     )
     # Dataset related.
     parser.add_argument(
@@ -104,10 +106,15 @@ def parse_args():
     # Training hyperparameters.
     parser.add_argument("--batch_size", default=1, type=int)
     parser.add_argument("--max_train_steps", default=800, type=int)
-    # Misc.
+    parser.add_argument(
+        "--train_text_encoder",
+        action="store_true",
+        help="If fine-tune the text-encoder too.",
+    )
     parser.add_argument(
         "--mp", action="store_true", help="Whether to use mixed-precision."
     )
+    # Misc.
     parser.add_argument(
         "--log_wandb", action="store_true", help="Whether to use mixed-precision."
     )
@@ -135,14 +142,17 @@ def run(args):
         class_images_url=args.class_images_url,
         unique_id=args.unique_id,
         class_category=args.class_category,
+        train_text_encoder=args.train_text_encoder,
         batch_size=args.batch_size,
     )
     train_dataset = data_util.prepare_datasets()
 
     print("Initializing trainer...")
-    ckpt_path = "dreambooth-unet.h5"
-    dreambooth_trainer = prepare_trainer(args.img_resolution, args.mp)
-    train(dreambooth_trainer, train_dataset, ckpt_path, args.max_train_steps)
+    ckpt_path_prefix = "dreambooth"
+    dreambooth_trainer = prepare_trainer(
+        args.img_resolution, args.train_text_encoder, args.mp
+    )
+    train(dreambooth_trainer, train_dataset, ckpt_path_prefix, args.max_train_steps)
 
     if args.log_wandb:
         print("Logging artifacts...")
@@ -151,13 +161,18 @@ def run(args):
             args.validation_prompt = (
                 f"A photo of {args.unique_id} {args.class_category} in a bucket"
             )
+
+        ckpt_paths = [dreambooth_trainer.diffusion_model_path]
+        if args.train_text_encoder:
+            ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
         utils.log_images(
-            [ckpt_path],
+            ckpt_paths,
             img_heigth=args.img_resolution,
             img_width=args.img_resolution,
             prompt=args.validation_prompt,
         )
-        utils.save_ckpts([ckpt_path])
+        utils.save_ckpts(ckpt_paths)
+        wandb.finish()
 
 
 if __name__ == "__main__":
