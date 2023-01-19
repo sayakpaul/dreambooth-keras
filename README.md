@@ -17,7 +17,7 @@ DreamBooth is a way of quickly teaching (fine-tuning) Stable Diffusion about new
 
 3. **Instance images**
     
-    Get a few images (3 - 10) that are representative of the concept the model is going to be fine-tuned with. These images would be associated with the `instance_prompt`. These images are referred to as the `instance_images` from the codebase. Archive these images and host them somewhere online so that the archive can be downloaded using `tf.keras.utils.get_file()` function internally.
+    Get a few images (3 - 10) that are representative of the concept the model is going to be fine-tuned with. These images would be associated with the `instance_prompt`. These images are referred to as the `instance_images` from the codebase. Archive these images and host them somewhere online such that the archive can be downloaded using `tf.keras.utils.get_file()` function internally.
 
 4. **Class images**
     
@@ -26,7 +26,7 @@ prior-preservation loss helps the model to slowly adapt to the new concept under
 
     As per [this resource](https://github.com/huggingface/diffusers/tree/main/examples/dreambooth), 200 - 300 images generated using the class prompt work well for most cases. 
 
-    So, after you have decided `instance_prompt` and `class_prompt`, use [this Colab Notebook](https://colab.research.google.com/gist/sayakpaul/6b5de345d29cf5860f84b6d04d958692/generate_class_priors.ipynb) to generate some images that would be used for training with the prior-preservation loss. In the codebase, we simply refer to these images as `class_images`. Then archive the generated images as a single archive and host it online such that it can be downloaded using the `requests` Python module. 
+    So, after you have decided `instance_prompt` and `class_prompt`, use [this Colab Notebook](https://colab.research.google.com/gist/sayakpaul/6b5de345d29cf5860f84b6d04d958692/generate_class_priors.ipynb) to generate some images that would be used for training with the prior-preservation loss. Then archive the generated images as a single archive and host it online such that it can be downloaded using using `tf.keras.utils.get_file()` function internally. In the codebase, we simply refer to these images as `class_images`.
     
 > For people to easily test this codebase, we hosted the instance and class images [here](https://huggingface.co/datasets/sayakpaul/sample-datasets/tree/main). 
 
