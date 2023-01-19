@@ -17,7 +17,7 @@ DreamBooth is a way of quickly teaching (fine-tuning) Stable Diffusion about new
 
 3. **Instance images**
     
-    Get a few images ( 3 - 10) that are representative of the concept the model is going to be fine-tuned with. These images would be associated with the `instance_prompt`. These images are referred to as the `instance_images` from the codebase. Archive these images and host it somewhere online so that the archive can be downloaded using `requests` Python module.
+    Get a few images (3 - 10) that are representative of the concept the model is going to be fine-tuned with. These images would be associated with the `instance_prompt`. These images are referred to as the `instance_images` from the codebase. Archive these images and host them somewhere online so that the archive can be downloaded using `tf.keras.utils.get_file()` function internally.
 
 4. **Class images**
     
