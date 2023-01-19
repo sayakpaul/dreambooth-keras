@@ -30,7 +30,7 @@ prior-preservation loss helps the model to slowly adapt to the new concept under
     
 > For people to easily test this codebase, we hosted the instance and class images [here](https://huggingface.co/datasets/sayakpaul/sample-datasets/tree/main). 
 
-5. Launch training! There are a number of hyperparameters you can play around with. Refer to the `train_dreambooth.py script` to know more about them. Here's a command that launches training with mixed-precision and other default values:
+5. Launch training! There are a number of hyperparameters you can play around with. Refer to the `train_dreambooth.py` script to know more about them. Here's a command that launches training with mixed-precision and other default values:
 
 ```bash=
 python train_dreambooth.py --mp
