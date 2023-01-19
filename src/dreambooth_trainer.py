@@ -96,13 +96,9 @@ class DreamBoothTrainer(tf.keras.Model):
                 loss = self.optimizer.get_scaled_loss(loss)
 
         # Update parameters.
+        trainable_vars = self.diffusion_model.trainable_variables
         if self.train_text_encoder:
-            trainable_vars = (
-                self.text_encoder.trainable_variables
-                + self.diffusion_model.trainable_variables
-            )
-        else:
-            trainable_vars = self.diffusion_model.trainable_variables
+            trainable_vars = self.text_encoder.trainable_variables + trainable_vars
 
         gradients = tape.gradient(loss, trainable_vars)
         if self.use_mixed_precision:
