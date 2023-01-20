@@ -1,4 +1,5 @@
 import itertools
+import random
 from typing import Callable, Dict, List, Tuple
 
 import keras_cv
@@ -114,10 +115,14 @@ class DatasetUtils:
 
     def _collate_instance_image_paths(
         self, instance_image_paths: List[str], class_image_paths: List[str]
-    ) -> List:
+    ) -> List[str]:
         """Makes `instance_image_paths`'s length equal to the length of `class_image_paths`."""
         new_instance_image_paths = []
-        for index in range(len(class_image_paths)):
+        num_class_image_paths = len(class_image_paths)
+        indices = list(range(num_class_image_paths))
+        random.shuffle(indices)
+
+        for index in indices:
             instance_image = instance_image_paths[index % len(instance_image_paths)]
             new_instance_image_paths.append(instance_image)
 
