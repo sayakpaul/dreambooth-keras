@@ -98,7 +98,7 @@ class DreamBoothTrainer(tf.keras.Model):
                 loss = self.optimizer.get_scaled_loss(loss)
 
         # Update parameters of the diffusion model.
-        if self.trainable_vars:
+        if self.train_text_encoder:
             trainable_vars = (
                 self.text_encoder.trainable_variables
                 + self.diffusion_model.trainable_variables
