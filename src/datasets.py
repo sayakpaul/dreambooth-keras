@@ -189,7 +189,7 @@ class DatasetUtils:
         captions. `texts` can either be tokens or embedded tokens."""
         dataset = tf.data.Dataset.from_tensor_slices((image_paths, texts))
         dataset = dataset.map(self._process_image, num_parallel_calls=AUTO)
-        dataset = dataset.shuffle(5, reshuffle_each_iteration=True)
+        dataset = dataset.shuffle(self.batch_size * 10, reshuffle_each_iteration=True)
         dataset = dataset.batch(self.batch_size)
         dataset = dataset.map(self._apply_augmentation, num_parallel_calls=AUTO)
 
