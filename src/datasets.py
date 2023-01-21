@@ -114,13 +114,10 @@ class DatasetUtils:
 
     def _collate_instance_image_paths(
         self, instance_image_paths: List[str], class_image_paths: List[str]
-    ) -> List[str]:
+    ) -> List:
         """Makes `instance_image_paths`'s length equal to the length of `class_image_paths`."""
         new_instance_image_paths = []
-        num_class_image_paths = len(class_image_paths)
-        indices = list(range(num_class_image_paths))
-
-        for index in indices:
+        for index in range(len(class_image_paths)):
             instance_image = instance_image_paths[index % len(instance_image_paths)]
             new_instance_image_paths.append(instance_image)
 
@@ -149,7 +146,7 @@ class DatasetUtils:
     def _process_image(
         self, image_path: tf.Tensor, text: tf.Tensor
     ) -> Tuple[tf.Tensor, tf.Tensor]:
-        """Reads an image file and scales it `text` can be either just tokens
+        """Reads an image file and scales it. `text` can be either just tokens
         or embedded tokens."""
         image = tf.io.read_file(image_path)
         image = tf.io.decode_png(image, 3)
@@ -191,8 +188,8 @@ class DatasetUtils:
         """Assembles `tf.data.Dataset` object from image paths and their corresponding
         captions. `texts` can either be tokens or embedded tokens."""
         dataset = tf.data.Dataset.from_tensor_slices((image_paths, texts))
-        dataset = dataset.shuffle(5, reshuffle_each_iteration=True)
         dataset = dataset.map(self._process_image, num_parallel_calls=AUTO)
+        dataset = dataset.shuffle(self.batch_size * 10, reshuffle_each_iteration=True)
         dataset = dataset.batch(self.batch_size)
         dataset = dataset.map(self._apply_augmentation, num_parallel_calls=AUTO)
 
@@ -205,7 +202,7 @@ class DatasetUtils:
 
         1. Download the instance and class images (archives) and un-archive them.
         2. Prepare the instance and class image paths.
-        3. Prepare the captions.
+        3. Prepare the instance and class captions.
         4. Tokenize the captions.
         5. If the text encoder is NOT fine-tuned then embed the tokenized captions.
         6. Assemble the datasets.

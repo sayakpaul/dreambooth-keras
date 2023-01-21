@@ -23,7 +23,11 @@ class DreamBoothTrainer(tf.keras.Model):
         super().__init__(**kwargs)
 
         self.diffusion_model = diffusion_model
+        self.diffusion_model.trainable = True
+
         self.vae = vae
+        self.vae.trainable = False
+
         self.noise_scheduler = noise_scheduler
 
         self.train_text_encoder = train_text_encoder
@@ -36,9 +40,7 @@ class DreamBoothTrainer(tf.keras.Model):
 
         self.prior_loss_weight = prior_loss_weight
         self.max_grad_norm = max_grad_norm
-
         self.use_mixed_precision = use_mixed_precision
-        self.vae.trainable = False
 
     def train_step(self, inputs):
         instance_batch = inputs[0]
@@ -95,10 +97,14 @@ class DreamBoothTrainer(tf.keras.Model):
             if self.use_mixed_precision:
                 loss = self.optimizer.get_scaled_loss(loss)
 
-        # Update parameters.
-        trainable_vars = self.diffusion_model.trainable_variables
+        # Update parameters of the diffusion model.
         if self.train_text_encoder:
-            trainable_vars = self.text_encoder.trainable_variables + trainable_vars
+            trainable_vars = (
+                self.text_encoder.trainable_variables
+                + self.diffusion_model.trainable_variables
+            )
+        else:
+            trainable_vars = self.diffusion_model.trainable_variables
 
         gradients = tape.gradient(loss, trainable_vars)
         if self.use_mixed_precision:
