@@ -23,7 +23,11 @@ class DreamBoothTrainer(tf.keras.Model):
         super().__init__(**kwargs)
 
         self.diffusion_model = diffusion_model
+        self.diffusion_model.trainable = True
+
         self.vae = vae
+        self.vae.trainable = False
+
         self.noise_scheduler = noise_scheduler
 
         self.train_text_encoder = train_text_encoder
@@ -36,9 +40,7 @@ class DreamBoothTrainer(tf.keras.Model):
 
         self.prior_loss_weight = prior_loss_weight
         self.max_grad_norm = max_grad_norm
-
         self.use_mixed_precision = use_mixed_precision
-        self.vae.trainable = False
 
     def train_step(self, inputs):
         instance_batch = inputs[0]
@@ -58,7 +60,7 @@ class DreamBoothTrainer(tf.keras.Model):
         with tf.GradientTape() as tape:
             # If the `text_encoder` is being fine-tuned.
             if self.train_text_encoder:
-                texts = self.text_encoder([texts, self.pos_ids], training=True)
+                texts = self.text_encoder(texts, training=False)
 
             # Project image into the latent space and sample from it.
             latents = self.sample_from_encoder_outputs(self.vae(images, training=False))
@@ -95,10 +97,14 @@ class DreamBoothTrainer(tf.keras.Model):
             if self.use_mixed_precision:
                 loss = self.optimizer.get_scaled_loss(loss)
 
-        # Update parameters.
-        trainable_vars = self.diffusion_model.trainable_variables
-        if self.train_text_encoder:
-            trainable_vars = self.text_encoder.trainable_variables + trainable_vars
+        # Update parameters of the diffusion model.
+        if self.trainable_vars:
+            trainable_vars = (
+                self.text_encoder.trainable_variables
+                + self.diffusion_model.trainable_variables
+            )
+        else:
+            trainable_vars = self.diffusion_model.trainable_variables
 
         gradients = tape.gradient(loss, trainable_vars)
         if self.use_mixed_precision:

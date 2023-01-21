@@ -156,7 +156,8 @@ def run(args):
 
     if args.log_wandb:
         print("Logging artifacts...")
-        wandb.init(project="dreambooth-keras", config=vars(args))
+        run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
+        wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
         if args.validation_prompt is None:
             args.validation_prompt = (
                 f"A photo of {args.unique_id} {args.class_category} in a bucket"
