@@ -148,7 +148,9 @@ def run(args):
     train_dataset = data_util.prepare_datasets()
 
     print("Initializing trainer...")
-    ckpt_path_prefix = "dreambooth"
+    ckpt_path_prefix = (
+        run_name
+    ) = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     dreambooth_trainer = prepare_trainer(
         args.img_resolution, args.train_text_encoder, args.mp
     )
@@ -156,7 +158,6 @@ def run(args):
 
     if args.log_wandb:
         print("Logging artifacts...")
-        run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
         wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
         if args.validation_prompt is None:
             args.validation_prompt = (
