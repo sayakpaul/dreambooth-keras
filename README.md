@@ -46,7 +46,9 @@ TBA
 
 ## Results
 
-We have tested dreambooth in two different methods: (a) fine-tuning the diffusion model only (b) fine-tuning the diffusion model along with text encoder. The experiments were conducted with vairous range of hyperparameters of `learning rate` and `training steps` for training and of `number of steps` and `unconditional guidance scale`(ugs) for inference, but only the best looking results are included here. If you are curious how different hyperparameters affect the resultant image quality, find the link of the full reports in each section.
+We have tested our implementation in two different methods: (a) fine-tuning the diffusion model (the UNet) only, (b) fine-tuning the diffusion model along with the text encoder. The experiments were conducted with a wide range of hyperparameters for `learning rate` and `training steps` for during training and for `number of steps` and `unconditional guidance scale` (ugs) during inference. But only the most salient results (from our perspective) are included here. If you are curious about how different hyperparameters affect the generated image quality, find the link to the full reports in each section.
+
+__Note that our experiments were guided by [this blog post from Hugging Face](https://huggingface.co/blog/dreambooth).__
 
 ### (a) Fine-tuning diffusion model
 
