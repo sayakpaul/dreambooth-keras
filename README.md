@@ -46,6 +46,62 @@ TBA
 
 ## Results
 
+We have tested dreambooth in two different methods: (a) fine-tuning the diffusion model only (b) fine-tuning the diffusion model along with text encoder. The experiments were conducted with vairous range of hyperparameters of `learning rate` and `training steps` for training and of `number of steps` and `unconditional guidance scale`(ugs) for inference, but only the best looking results are included here. If you are curious how different hyperparameters affect the resultant image quality, find the link of the full reports in each section.
+
+### (a) Fine-tuning diffusion model
+
+TBA
+
+### (b) Fine-tuning text encoder + diffusion model
+
+<div align="center">
+<table>
+  <tr>
+    <th>Images</th>
+    <th>Steps</th>
+    <th>ugs</th>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/BNVtwDB/dog.png"/></td>
+    <td>75</td>
+    <td>15</td>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/zWMzxq2/dog-2.png"/></td>
+    <td>75</td>
+    <td>30</td>
+  </tr>  
+</table>
+<sub>"A photo of sks dog in a bucket" </sub> 
+
+<sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/chansung/dreambooth-dog">weights</a> | <a href="https://wandb.ai/chansung18/dreambooth-keras-generating-images?workspace=user-chansung18">reports</a>)</sub>
+</div><br>
+
+
+<div align="center">
+<table>
+  <tr>
+    <th>Images</th>
+    <th>Steps</th>
+    <th>ugs</th>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/XYz3s5N/chansung.png"/></td>
+    <td>150</td>
+    <td>15</td>
+  </tr>
+  <tr>
+    <td><img src="https://i.ibb.co/mFMZG04/chansung-2.png"/></td>
+    <td>75</td>
+    <td>30</td>
+  </tr>  
+</table>
+<sub>"A photo of sks person without mustache, handsome, ultra realistic, 4k, 8k"</sub> 
+
+<sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/datasets/chansung/me">datasets</a> | <a href="https://wandb.ai/chansung18/dreambooth-generate-me?workspace=user-chansung18">reports</a>)</sub>
+</div><br>
+
+
 ## Acknowledgements
 
 * Thanks to Hugging Face for providing the original example. It's very readable and easy to understand.
