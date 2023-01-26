@@ -88,7 +88,7 @@ Here are a selected few results from various experiments we conducted. Our exper
     <td><img src="https://i.imgur.com/Ewt0BhG.png"/></td>
     <td>25</td>
     <td>15</td>
-    <td>LR: 1e-6 Training steps: 1000 <a href>(Weights)</a></td>
+    <td>LR: 1e-6 Training steps: 1000 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_1e-6_steps_1000.h5">(Weights)</a></td>
   </tr>  
   <tr>
     <td><img src="https://i.imgur.com/Dn0uGZa.png"/></td>
