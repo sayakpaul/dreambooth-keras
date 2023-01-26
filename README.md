@@ -118,6 +118,15 @@ TBA
 <sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/datasets/chansung/me">datasets</a> | <a href="https://wandb.ai/chansung18/dreambooth-generate-me?workspace=user-chansung18">reports</a>)</sub>
 </div><br>
 
+## Notes on preparing data for DreamBooth training of faces
+
+In addition to the tips and tricks shared in [this blog post](https://huggingface.co/blog/dreambooth#using-prior-preservation-when-training-faces), we followed these things while preparing the instances for conducting DreamBooth training on human faces:
+
+* Instead of 3 - 5 images, use 20 - 25 images of the same person varying different angles, backgrounds, and poses.
+* No use of images containing multiple persons. 
+* If the person wears glasses, don't include images only with glasses. Combine images with and without glasses.
+
+Thanks to [Abhishek Thakur](https://no.linkedin.com/in/abhi1thakur) for sharing these tips. 
 
 ## Acknowledgements
 
