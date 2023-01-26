@@ -4,6 +4,20 @@ This repository provides an implementation of [DreamBooth](https://arxiv.org/abs
 
 DreamBooth is a way of quickly teaching (fine-tuning) Stable Diffusion about new visual concepts. For more details, refer to [this document](https://dreambooth.github.io/).
 
+**The code provided in this repository is for research purposes only**. Please check out [this section](https://github.com/keras-team/keras-cv/tree/master/keras_cv/models/stable_diffusion#uses) to know more about the potential use cases and limitations.
+
+By loading this model you accept the CreativeML Open RAIL-M license at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE.
+
+<div align="center">
+<img src="https://i.imgur.com/gYlgLPm.png"/>
+</div>
+
+If you're just looking for the accompanying resources of this repository, here are the links:
+
+* [Inference Colab Notebook](https://colab.research.google.com/github/sayakpaul/dreambooth-keras/blob/main/notebooks/inference_dreambooth.ipynb)
+* [Blog post on keras.io] (upcoming)
+* [Fine-tuned model weights](https://huggingface.co/chansung/dreambooth-dog)
+
 ## Steps to perform DreamBooth training using the codebase
 
 1. Install the pre-requisites: `pip install -r requirements.txt`.
@@ -28,25 +42,26 @@ prior-preservation loss helps the model to slowly adapt to the new concept under
 
     So, after you have decided `instance_prompt` and `class_prompt`, use [this Colab Notebook](https://colab.research.google.com/github/sayakpaul/dreambooth-keras/blob/main/notebooks/generate_class_priors.ipynb) to generate some images that would be used for training with the prior-preservation loss. Then archive the generated images as a single archive and host it online such that it can be downloaded using using `tf.keras.utils.get_file()` function internally. In the codebase, we simply refer to these images as `class_images`.
     
-> For people to easily test this codebase, we hosted the instance and class images [here](https://huggingface.co/datasets/sayakpaul/sample-datasets/tree/main). 
+> It's possible to conduct DreamBooth training WITHOUT using a prior preservation loss. This repository always uses it. For people to easily test this codebase, we hosted the instance and class images [here](https://huggingface.co/datasets/sayakpaul/sample-datasets/tree/main). 
 
 5. Launch training! There are a number of hyperparameters you can play around with. Refer to the `train_dreambooth.py` script to know more about them. Here's a command that launches training with mixed-precision and other default values:
 
-```bash=
-python train_dreambooth.py --mp
-```
+    ```bash
+    python train_dreambooth.py --mp
+    ```
 
-You can also fine-tune the text encoder by specifying the `--train_text_encoder` option. 
+    You can also fine-tune the text encoder by specifying the `--train_text_encoder` option. 
 
-Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). if you specify `--log_wandb`, then it will perform inference with the DreamBoothed model parameters and log the generated images to `wandb` alongside the model parameters as artifacts. [Here's](https://wandb.ai/sayakpaul/dreambooth-keras/runs/este2e4c) an example `wandb` run where you can find the generated images as well as the [model parameters](https://wandb.ai/sayakpaul/dreambooth-keras/artifacts/model/run_este2e4c_model/v0/files). 
+    Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). If you specify `--log_wandb`, then it will perform inference with the DreamBoothed model parameters and log the generated images to `wandb` alongside the model parameters as artifacts. [Here's](https://wandb.ai/sayakpaul/dreambooth-keras/runs/este2e4c) an example `wandb` run where you can find the generated images as well as the [model parameters](https://wandb.ai/sayakpaul/dreambooth-keras/artifacts/model/run_este2e4c_model/v0/files). 
 
 ## Inference
 
-TBA
+* [Colab Notebook](https://colab.research.google.com/github/sayakpaul/dreambooth-keras/blob/main/notebooks/inference_dreambooth.ipynb)
+* [Script for launching bulk experiments](https://github.com/sayakpaul/dreambooth-keras/blob/main/scripts/generate_experimental_images.py)
 
 ## Results
 
-We have tested our implementation in two different methods: (a) fine-tuning the diffusion model (the UNet) only, (b) fine-tuning the diffusion model along with the text encoder. The experiments were conducted with a wide range of hyperparameters for `learning rate` and `training steps` for during training and for `number of steps` and `unconditional guidance scale` (ugs) during inference. But only the most salient results (from our perspective) are included here. If you are curious about how different hyperparameters affect the generated image quality, find the link to the full reports in each section.
+We have tested our implementation in two different methods: (a) fine-tuning the diffusion model (the UNet) only, (b) fine-tuning the diffusion model along with the text encoder. The experiments were conducted over a wide range of hyperparameters for `learning rate` and `training steps` for during training and for `number of steps` and `unconditional guidance scale` (ugs) during inference. But only the most salient results (from our perspective) are included here. If you are curious about how different hyperparameters affect the generated image quality, find the link to the full reports in each section.
 
 __Note that our experiments were guided by [this blog post from Hugging Face](https://huggingface.co/blog/dreambooth).__
 
@@ -106,5 +121,5 @@ TBA
 
 ## Acknowledgements
 
-* Thanks to Hugging Face for providing the original example. It's very readable and easy to understand.
+* Thanks to Hugging Face for providing the [original example](https://github.com/huggingface/diffusers/tree/main/examples/dreambooth). It's very readable and easy to understand.
 * Thanks to the ML Developer Programs' team at Google for providing GCP credits.
