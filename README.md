@@ -98,7 +98,7 @@ Here are a selected few results from various experiments we conducted. Our exper
   </tr>
 </table>
 <sub><b>Caption</b>: "A photo of sks dog in a bucket" </sub> 
-<div>
+</div>
 
 ### (b) Fine-tuning text encoder + diffusion model
 
