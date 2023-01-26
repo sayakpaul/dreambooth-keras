@@ -67,7 +67,38 @@ __Note that our experiments were guided by [this blog post from Hugging Face](ht
 
 ### (a) Fine-tuning diffusion model
 
-TBA
+Here are a selected few results from various experiments we conducted. Our experimental logs for this setting are available [here](https://wandb.ai/sayakpaul/dreambooth-keras). More visualization images (generated with the checkpoints from these experiments) are available [here](https://wandb.ai/sayakpaul/experimentation_images). 
+
+
+<div align="center">
+<table>
+  <tr>
+    <th>Images</th>
+    <th>Steps</th>
+    <th>UGS</th>
+    <th>Setting</th>
+  </tr>
+  <tr>
+    <td><img src="https://i.imgur.com/UUSfrwW.png"/></td>
+    <td>50</td>
+    <td>30</td>
+    <td>LR: 1e-6 Training steps: 800 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_1e-6_steps_800_unet.h5">(Weights)</a></td>
+  </tr>
+  <tr>
+    <td><img src="https://i.imgur.com/Ewt0BhG.png"/></td>
+    <td>25</td>
+    <td>15</td>
+    <td>LR: 1e-6 Training steps: 1000 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_1e-6_steps_1000.h5">(Weights)</a></td>
+  </tr>  
+  <tr>
+    <td><img src="https://i.imgur.com/Dn0uGZa.png"/></td>
+    <td>75</td>
+    <td>15</td>
+    <td>LR: 3e-6 Training steps: 1200 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_3e-6_steps_1200_unet.h5">(Weights)</a></td>
+  </tr>
+</table>
+<sub><b>Caption</b>: "A photo of sks dog in a bucket" </sub> 
+</div>
 
 ### (b) Fine-tuning text encoder + diffusion model
 
@@ -89,7 +120,7 @@ TBA
     <td>30</td>
   </tr>  
 </table>
-<sub>"A photo of sks dog in a bucket" </sub> 
+<sub>"<b>Caption</b>: A photo of sks dog in a bucket" </sub> 
 
 <sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/chansung/dreambooth-dog">weights</a> | <a href="https://wandb.ai/chansung18/dreambooth-keras-generating-images?workspace=user-chansung18">reports</a>)</sub>
 </div><br>
@@ -113,7 +144,7 @@ TBA
     <td>30</td>
   </tr>  
 </table>
-<sub>"A photo of sks person without mustache, handsome, ultra realistic, 4k, 8k"</sub> 
+<sub>"<b>Caption</b>: A photo of sks person without mustache, handsome, ultra realistic, 4k, 8k"</sub> 
 
 <sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/datasets/chansung/me">datasets</a> | <a href="https://wandb.ai/chansung18/dreambooth-generate-me?workspace=user-chansung18">reports</a>)</sub>
 </div><br>
