@@ -82,7 +82,7 @@ Here are a selected few results from various experiments we conducted. Our exper
     <td><img src="https://i.imgur.com/UUSfrwW.png"/></td>
     <td>50</td>
     <td>30</td>
-    <td>LR: 1e-6 Training steps: 800 <a href>(Weights)</a></td>
+    <td>LR: 1e-6 Training steps: 800 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_1e-6_steps_800_unet.h5">(Weights)</a></td>
   </tr>
   <tr>
     <td><img src="https://i.imgur.com/Ewt0BhG.png"/></td>
@@ -94,7 +94,7 @@ Here are a selected few results from various experiments we conducted. Our exper
     <td><img src="https://i.imgur.com/Dn0uGZa.png"/></td>
     <td>75</td>
     <td>15</td>
-    <td>LR: 3e-6 Training steps: 1200 <a href>(Weights)</a></td>
+    <td>LR: 3e-6 Training steps: 1200 <a href="https://huggingface.co/sayakpaul/dreambooth-keras-dogs-unet/resolve/main/lr_3e-6_steps_1200_unet.h5">(Weights)</a></td>
   </tr>
 </table>
 <sub><b>Caption</b>: "A photo of sks dog in a bucket" </sub> 
