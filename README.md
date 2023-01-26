@@ -76,7 +76,7 @@ Here are a selected few results from various experiments we conducted. Our exper
     <th>Images</th>
     <th>Steps</th>
     <th>UGS</th>
-    <th>Setting<th>
+    <th>Setting</th>
   </tr>
   <tr>
     <td><img src="https://i.imgur.com/UUSfrwW.png"/></td>
