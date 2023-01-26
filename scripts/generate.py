@@ -1,3 +1,24 @@
+"""
+    use this script to generate and report a batch of images to W&B 
+    with a single prompt through multiple weights of Stable Diffusion.
+    This is particularly useful when you have multiple fine-tuned weight 
+    files. It works for the both cases: (a) diffusion model only and
+    (b) text encoder + diffusion model
+
+    usage:
+
+    # find weight files(.h5) under "." location
+    # generate 4 images with the nested loop over
+    # num_steps x ugs combinations
+    $ python generate.py \
+        --base_root_dir . \   
+        --caption "A photo of sks dog in a bucket" \ 
+        --num_image_gen 4 \. 
+        --num_steps 75 100 150 \
+        --ugs 15 30 \
+        --wandb_project_id "my-wandb-project"
+"""
+
 import tensorflow as tf
 
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
