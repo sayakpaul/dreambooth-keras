@@ -176,6 +176,7 @@ checkpoints of this repository in a `StableDiffusionPipeline` after running some
 ```py
 from diffusers import StableDiffusionPipeline
 
+# checkpoint of the converted Stable Diffusion from KerasCV
 model_ckpt = "sayakpaul/text-unet-dogs-kerascv_sd_diffusers_pipeline"
 pipeline = StableDiffusionPipeline.from_pretrained(model_ckpt)
 pipeline.to("cuda")
