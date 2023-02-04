@@ -18,6 +18,15 @@ If you're just looking for the accompanying resources of this repository, here a
 * [Blog post on keras.io] (upcoming)
 * [Fine-tuned model weights](https://huggingface.co/chansung/dreambooth-dog)
 
+### Table of contents
+
+* [Performing DreamBooth training with the codebase](#steps-to-perform-dreambooth-training-using-the-codebase)
+* [Running inference](#inference)
+* [Results](#results)
+* [Using in Diffusers 🧨](#using-in-diffusers-)
+* [Notes](#notes-on-preparing-data-for-dreambooth-training-of-faces)
+* [Acknowledgements](#acknowledgements)
+
 ## Steps to perform DreamBooth training using the codebase
 
 1. Install the pre-requisites: `pip install -r requirements.txt`.
@@ -148,6 +157,37 @@ Here are a selected few results from various experiments we conducted. Our exper
 
 <sub> w/ learning rate=9e-06, max train steps=200 (<a href="https://huggingface.co/datasets/chansung/me">datasets</a> | <a href="https://wandb.ai/chansung18/dreambooth-generate-me?workspace=user-chansung18">reports</a>)</sub>
 </div><br>
+
+## Using in Diffusers 🧨
+
+The [`diffusers` library](https://github.com/huggingface/diffusers/) provides state-of-the-art tooling for experimenting with
+different Diffusion models, including Stable Diffusion. It includes 
+different optimization techniques that can be leveraged to perform efficient inference
+with `diffusers` when using large Stable Diffusion checkpoints. One particularly 
+advantageous feature `diffusers` has is its support for [different schedulers](https://huggingface.co/docs/diffusers/using-diffusers/schedulers) that can
+be configured during runtime and can be integrated into any compatible Diffusion model.
+
+Once you have obtained the DreamBooth fine-tuned checkpoints using this codebase, you can actually
+export those into a handy [`StableDiffusionPipeline`](https://huggingface.co/docs/diffusers/api/pipelines/stable_diffusion/overview) and use it from the `diffusers` library directly. 
+
+Consider this repository: [chansung/dreambooth-dog](https://huggingface.co/chansung/dreambooth-dog). You can use the
+checkpoints of this repository in a `StableDiffusionPipeline` after running some small steps:
+
+```py
+from diffusers import StableDiffusionPipeline
+
+# checkpoint of the converted Stable Diffusion from KerasCV
+model_ckpt = "sayakpaul/text-unet-dogs-kerascv_sd_diffusers_pipeline"
+pipeline = StableDiffusionPipeline.from_pretrained(model_ckpt)
+pipeline.to("cuda")
+
+unique_id = "sks"
+class_label = "dog"
+prompt = f"A photo of {unique_id} {class_label} in a bucket"
+image = pipeline(prompt, num_inference_steps=50).images[0]
+```
+
+Follow [this guide](https://huggingface.co/docs/diffusers/main/en/using-diffusers/kerascv) to know more. 
 
 ## Notes on preparing data for DreamBooth training of faces
 
