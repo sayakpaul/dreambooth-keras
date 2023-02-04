@@ -23,7 +23,7 @@ If you're just looking for the accompanying resources of this repository, here a
 * [Performing DreamBooth training with the codebase](#steps-to-perform-dreambooth-training-using-the-codebase)
 * [Running inference](#inference)
 * [Results](#results)
-* [Using in Diffusers 🧨](#using-in-diffusers-🧨)
+* [Using in Diffusers 🧨](#using-in-diffusers-)
 * [Notes](#notes-on-preparing-data-for-dreambooth-training-of-faces)
 * [Acknowledgements](#acknowledgements)
 
