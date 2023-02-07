@@ -189,6 +189,52 @@ image = pipeline(prompt, num_inference_steps=50).images[0]
 
 Follow [this guide](https://huggingface.co/docs/diffusers/main/en/using-diffusers/kerascv) to know more. 
 
+
+### Experimental results through various scheduler settings:
+
+<details>
+<summary>
+We have converted fine-tuned checkpoint for the dog images into Diffusers compatible StableDiffusionPipeline and ran various experiments with different scheduler settings. For example, the following parameters of the `DDIMScheduler` are tested on a different set of `guidance_scale` and `num_inference_steps`.
+</summary>
+
+```python
+num_inference_steps_list = [25, 50, 75, 100]
+guidance_scale_list = [7.5, 15, 30]
+
+scheduler_configs = {
+  "DDIMScheduler": {
+      "beta_value": [
+          [0.000001, 0.02], 
+          [0.000005, 0.02], 
+          [0.00001, 0.02], 
+          [0.00005, 0.02], 
+          [0.0001, 0.02], 
+          [0.0005, 0.02]
+      ],
+      "beta_schedule": [
+          "linear", 
+          "scaled_linear", 
+          "squaredcos_cap_v2"
+      ],
+      "clip_sample": [True, False],
+      "set_alpha_to_one": [True, False],
+      "prediction_type": [
+          "epsilon", 
+          "sample", 
+          "v_prediction"
+      ]
+  }
+}
+```
+
+Below shows the comparison between different values of `beta_schedule` parameters while others fixed as default. Take a look at [the original report](https://docs.google.com/spreadsheets/d/1_NhWuORn5ByEnvD9T3X4sHUnz_GR8uEtbE5HbI98hOM/edit?usp=sharing) which includes the results from other schedulers such as `PNDMScheduler` and `LMSDiscrete`.
+
+![](https://i.postimg.cc/QsW-CKTcv/DDIMScheduler.png)
+
+We have also run 4,800 experiments which generated 38,400 images in total. Those experiments are logged in Weights and Biases, and they are open to public. If you are curious, do check them out [here](https://wandb.ai/chansung18/SD-Scheduler-Explore?workspace=user-chansung18).
+
+</details>
+
 ## Notes on preparing data for DreamBooth training of faces
 
 In addition to the tips and tricks shared in [this blog post](https://huggingface.co/blog/dreambooth#using-prior-preservation-when-training-faces), we followed these things while preparing the instances for conducting DreamBooth training on human faces:
