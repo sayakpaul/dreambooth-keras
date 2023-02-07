@@ -227,7 +227,9 @@ scheduler_configs = {
 }
 ```
 
-Below shows the comparison between different values of `beta_schedule` parameters while others fixed as default. Take a look at [the original report](https://docs.google.com/spreadsheets/d/1_NhWuORn5ByEnvD9T3X4sHUnz_GR8uEtbE5HbI98hOM/edit?usp=sharing) which includes the results from other schedulers such as `PNDMScheduler` and `LMSDiscrete`.
+Below shows the comparison between different values of `beta_schedule` parameters while others fixed as default. Take a look at [the original report](https://docs.google.com/spreadsheets/d/1_NhWuORn5ByEnvD9T3X4sHUnz_GR8uEtbE5HbI98hOM/edit?usp=sharing) which includes the results from other schedulers such as `PNDMScheduler` and `LMSDiscrete`. 
+
+It is often observed the default settings doesn't guarantee to generate better quality images. For example, the default values `guidance_scale` and `beta_schedule` are set to 7.5 and `linear`. However, when `guidance_scale` is set to 7.5, `scaled_linear` of the `beta_schedule` seems to work better. Or, when `beta_schedule` is set to `linear`, higher `guidance_scale` seems to work better. 
 
 ![](https://i.postimg.cc/QsW-CKTcv/DDIMScheduler.png)
 
