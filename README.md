@@ -192,10 +192,7 @@ Follow [this guide](https://huggingface.co/docs/diffusers/main/en/using-diffuser
 
 ### Experimental results through various scheduler settings:
 
-<details>
-<summary>
 We have converted fine-tuned checkpoint for the dog images into Diffusers compatible StableDiffusionPipeline and ran various experiments with different scheduler settings. For example, the following parameters of the `DDIMScheduler` are tested on a different set of `guidance_scale` and `num_inference_steps`.
-</summary>
 
 ```python
 num_inference_steps_list = [25, 50, 75, 100]
@@ -234,8 +231,6 @@ It is often observed the default settings do guarantee to generate better qualit
 ![](https://i.postimg.cc/QsW-CKTcv/DDIMScheduler.png)
 
 We ran 4,800 experiments which generated 38,400 images in total. Those experiments are logged in Weights and Biases. If you are curious, do check them out [here](https://wandb.ai/chansung18/SD-Scheduler-Explore?workspace=user-chansung18) as well as the [script](https://gist.github.com/deep-diver/0a2deb2cd369ab8c1bf3ee12f47d272a) that was used to run the experiments. 
-
-</details>
 
 ## Notes on preparing data for DreamBooth training of faces
 
