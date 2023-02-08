@@ -233,7 +233,7 @@ It is often observed the default settings do guarantee to generate better qualit
 
 ![](https://i.postimg.cc/QsW-CKTcv/DDIMScheduler.png)
 
-We have also run 4,800 experiments which generated 38,400 images in total. Those experiments are logged in Weights and Biases, and they are open to public. If you are curious, do check them out [here](https://wandb.ai/chansung18/SD-Scheduler-Explore?workspace=user-chansung18) as well as the [script](https://gist.github.com/deep-diver/0a2deb2cd369ab8c1bf3ee12f47d272a) that run the experiments. 
+We ran 4,800 experiments which generated 38,400 images in total. Those experiments are logged in Weights and Biases. If you are curious, do check them out [here](https://wandb.ai/chansung18/SD-Scheduler-Explore?workspace=user-chansung18) as well as the [script](https://gist.github.com/deep-diver/0a2deb2cd369ab8c1bf3ee12f47d272a) that was used to run the experiments. 
 
 </details>
 
