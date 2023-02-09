@@ -186,7 +186,7 @@ def run(args):
         args.log_wandb,
     )
 
-    if args.wandb_project is not None:
+    if args.log_wandb:
         print("Logging artifacts...")
         if args.validation_prompt is None:
             args.validation_prompt = (
