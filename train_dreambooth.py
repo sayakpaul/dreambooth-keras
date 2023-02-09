@@ -18,6 +18,7 @@ from src import utils
 from src.constants import MAX_PROMPT_LENGTH
 from src.datasets import DatasetUtils
 from src.dreambooth_trainer import DreamBoothTrainer
+from src.utils import QualitativeValidationCallback
 
 import wandb
 from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
@@ -70,31 +71,11 @@ def prepare_trainer(
     return dreambooth_trainer
 
 
-def train(
-    dreambooth_trainer, train_dataset, ckpt_path_prefix, max_train_steps, using_wandb
-):
+def train(dreambooth_trainer, train_dataset, max_train_steps, callbacks):
     """Performs DreamBooth training `DreamBoothTrainer` with the given `train_dataset`."""
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
-
-    callbacks = (
-        [
-            WandbMetricsLogger(),
-            WandbModelCheckpoint(
-                ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
-            ),
-        ]
-        if using_wandb
-        else [
-            tf.keras.callbacks.ModelCheckpoint(
-                ckpt_path_prefix,
-                save_weights_only=True,
-                monitor="loss",
-                mode="min",
-            )
-        ]
-    )
     dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=callbacks)
 
 
@@ -140,10 +121,17 @@ def parse_args():
         help="Whether to use Weights & Biases for experiment tracking.",
     )
     parser.add_argument(
-        "--validation_prompt",
+        "--validation_prompts",
+        nargs="+",
         default=None,
         type=str,
-        help="Prompt to generate samples for validation purposes.",
+        help="Prompts to generate samples for validation purposes.",
+    )
+    parser.add_argument(
+        "--num_images_to_generate",
+        default=None,
+        type=str,
+        help="Number of validation image to generate per prompt.",
     )
 
     return parser.parse_args()
@@ -178,21 +166,35 @@ def run(args):
     dreambooth_trainer = prepare_trainer(
         args.img_resolution, args.train_text_encoder, args.mp
     )
-    train(
-        dreambooth_trainer,
-        train_dataset,
-        ckpt_path_prefix,
-        args.max_train_steps,
-        args.log_wandb,
+
+    default_validation_prompt = (
+        f"A photo of {args.unique_id} {args.class_category} in a bucket"
     )
+    callbacks = (
+        [
+            WandbMetricsLogger(),
+            WandbModelCheckpoint(
+                ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
+            ),
+            QualitativeValidationCallback(
+                img_heigth=args.img_resolution,
+                img_width=args.img_resolution,
+                prompts=args.validation_prompts
+                if args.validation_prompts is not None
+                else [default_validation_prompt],
+                num_images_to_generate=args.num_images_to_generate,
+            ),
+        ]
+        if args.log_wandb
+        else [
+            tf.keras.callbacks.ModelCheckpoint(ckpt_path_prefix, save_weights_only=True)
+        ]
+    )
+
+    train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
 
     if args.log_wandb:
         print("Logging artifacts...")
-        if args.validation_prompt is None:
-            args.validation_prompt = (
-                f"A photo of {args.unique_id} {args.class_category} in a bucket"
-            )
-
         ckpt_paths = [dreambooth_trainer.diffusion_model_path]
         if args.train_text_encoder:
             ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
@@ -200,7 +202,7 @@ def run(args):
             ckpt_paths,
             img_heigth=args.img_resolution,
             img_width=args.img_resolution,
-            prompt=args.validation_prompt,
+            prompt=default_validation_prompt,
         )
         utils.save_ckpts(ckpt_paths)
         wandb.finish()
