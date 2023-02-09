@@ -1,6 +1,7 @@
 import keras_cv
 import PIL
 import wandb
+from wandb.keras import WandbModelCheckpoint
 
 
 def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
@@ -8,7 +9,9 @@ def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
     print("Performing inference for logging generated images...")
     print(f"Number of images to generate: {num_imgs_to_gen} to prompt: {prompt}")
 
-    sd_model = keras_cv.models.StableDiffusion(img_height=img_heigth, img_width=img_width)
+    sd_model = keras_cv.models.StableDiffusion(
+        img_height=img_heigth, img_width=img_width
+    )
     sd_model.diffusion_model.load_weights(ckpt_paths[0])
     if len(ckpt_paths) > 1:
         sd_model.text_encoder.load_weights(ckpt_paths[1])
