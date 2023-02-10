@@ -62,8 +62,13 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
         self.wandb_table = wandb.Table(columns=["epoch", "prompt", "images"])
 
     def on_epoch_end(self, epoch, logs=None):
-        self.sd_model.set_weights(self.model.diffusion_model.get_weights())
-        self.sd_model.text_encoder.set_weights(self.model.text_encoder.get_weights())
+        self.sd_model.diffusion_model.set_weights(
+            self.model.diffusion_model.get_weights()
+        )
+        if hasattr(self.model, "text_encoder"):
+            self.sd_model.text_encoder.set_weights(
+                self.model.text_encoder.get_weights()
+            )
         for prompt in tqdm(
             self.prompts, desc=f"Generating dreamboothed images for epoch {epoch}"
         ):
@@ -75,3 +80,6 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
                 for i, image in enumerate(images_dreamboothed)
             ]
             self.wandb_table.add_data(epoch, prompt, images_dreamboothed)
+
+    def on_train_end(self, logs=None):
+        wandb.log({"validation-table": self.wandb_table})

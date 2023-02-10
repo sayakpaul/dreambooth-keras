@@ -129,8 +129,8 @@ def parse_args():
     )
     parser.add_argument(
         "--num_images_to_generate",
-        default=None,
-        type=str,
+        default=5,
+        type=int,
         help="Number of validation image to generate per prompt.",
     )
 
@@ -182,7 +182,7 @@ def run(args):
                 prompts=args.validation_prompts
                 if args.validation_prompts is not None
                 else [default_validation_prompt],
-                num_images_to_generate=args.num_images_to_generate,
+                num_imgs_to_gen=args.num_images_to_generate,
             ),
         ]
         if args.log_wandb
