@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "restorers"
+dynamic = ["version"]
+description = "Implementation of DreamBooth in KerasCV and TensorFlow."
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "keras_cv==0.4.0",
+    "tensorflow_datasets>=4.8.1",
+    "pillow==9.4.0",
+    "wandb>=0.13.9",
+    "imutils",
+    "opencv-python",
+]
+
+[project.urls]
+homepage = "https://github.com/sayakpaul/dreambooth-keras"
+repository = "https://github.com/sayakpaul/dreambooth-keras"
