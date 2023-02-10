@@ -138,6 +138,10 @@ def parse_args():
 def run(args):
     # Set random seed for reproducibility
     tf.keras.utils.set_random_seed(args.seed)
+
+    validation_prompts = [f"A photo of {args.unique_id} {args.class_category} in a bucket"]
+    if args.validation_prompts is not None:
+        validation_prompts += args.validation_prompts
     
     run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     if args.log_wandb:
@@ -167,9 +171,6 @@ def run(args):
         args.img_resolution, args.train_text_encoder, args.mp
     )
 
-    default_validation_prompt = (
-        f"A photo of {args.unique_id} {args.class_category} in a bucket"
-    )
     callbacks = (
         [
             WandbMetricsLogger(log_freq="batch"),
@@ -179,9 +180,7 @@ def run(args):
             QualitativeValidationCallback(
                 img_heigth=args.img_resolution,
                 img_width=args.img_resolution,
-                prompts=args.validation_prompts
-                if args.validation_prompts is not None
-                else [default_validation_prompt],
+                prompts=validation_prompts,
                 num_imgs_to_gen=args.num_images_to_generate,
             ),
         ]
@@ -203,7 +202,7 @@ def run(args):
             ckpt_paths,
             img_heigth=args.img_resolution,
             img_width=args.img_resolution,
-            prompt=default_validation_prompt,
+            prompt=validation_prompts,
         )
         wandb.finish()
 

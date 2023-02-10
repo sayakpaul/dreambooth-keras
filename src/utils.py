@@ -9,7 +9,7 @@ import tensorflow as tf
 import wandb
 
 
-def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
+def log_images(ckpt_paths, img_heigth, img_width, prompts, num_imgs_to_gen=5):
     """Logs generated images to WandB for qualitative validation."""
     print("Performing inference for logging generated images...")
     print(f"Number of images to generate: {num_imgs_to_gen} to prompt: {prompt}")
@@ -19,15 +19,15 @@ def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
     if len(ckpt_paths) > 1:
         sd_model.text_encoder.load_weights(ckpt_paths[1])
 
-    images_dreamboothed = sd_model.text_to_image(prompt, batch_size=num_imgs_to_gen)
-    wandb.log(
-        {
-            "validation": [
-                wandb.Image(PIL.Image.fromarray(image), caption=f"{i}: {prompt}")
-                for i, image in enumerate(images_dreamboothed)
-            ]
-        }
-    )
+    generated_images_visualization = []
+    for prompt in prompts:
+        images_dreamboothed = sd_model.text_to_image(prompt, batch_size=num_imgs_to_gen)
+        generated_images_visualization += [
+            wandb.Image(PIL.Image.fromarray(image), caption=f"{i}: {prompt}")
+            for i, image in enumerate(images_dreamboothed)
+        ]
+
+    wandb.log({"validation": generated_images_visualization})
 
 
 class QualitativeValidationCallback(tf.keras.callbacks.Callback):
