@@ -12,7 +12,7 @@ import wandb
 def log_images(ckpt_paths, img_heigth, img_width, prompts, num_imgs_to_gen=5):
     """Logs generated images to WandB for qualitative validation."""
     print("Performing inference for logging generated images...")
-    print(f"Number of images to generate: {num_imgs_to_gen} to prompt: {prompt}")
+    print(f"Number of images to generate: {num_imgs_to_gen}")
 
     sd_model = keras_cv.models.StableDiffusion(img_height=img_heigth, img_width=img_width)
     sd_model.diffusion_model.load_weights(ckpt_paths[0])
