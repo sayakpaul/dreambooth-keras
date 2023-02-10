@@ -202,7 +202,7 @@ def run(args):
             ckpt_paths,
             img_heigth=args.img_resolution,
             img_width=args.img_resolution,
-            prompt=validation_prompts,
+            prompts=validation_prompts,
         )
         wandb.finish()
 
