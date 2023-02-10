@@ -1,9 +1,9 @@
+import keras_cv
 from typing import List
 
 import PIL
 from tqdm.auto import tqdm
 
-import keras_cv
 import tensorflow as tf
 
 import wandb
