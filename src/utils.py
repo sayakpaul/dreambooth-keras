@@ -69,9 +69,7 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
             self.sd_model.text_encoder.set_weights(
                 self.model.text_encoder.get_weights()
             )
-        for prompt in tqdm(
-            self.prompts, desc=f"Generating dreamboothed images for epoch {epoch}"
-        ):
+        for prompt in self.prompts:
             images_dreamboothed = self.sd_model.text_to_image(
                 prompt, batch_size=self.num_imgs_to_gen
             )
