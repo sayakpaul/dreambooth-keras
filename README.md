@@ -61,7 +61,7 @@ prior-preservation loss helps the model to slowly adapt to the new concept under
 
     You can also fine-tune the text encoder by specifying the `--train_text_encoder` option. 
 
-    Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). If you specify `--log_wandb`, then it will perform inference with the DreamBoothed model parameters and log the generated images to `wandb` alongside the model parameters as artifacts. [Here's](https://wandb.ai/sayakpaul/dreambooth-keras/runs/este2e4c) an example `wandb` run where you can find the generated images as well as the [model parameters](https://wandb.ai/sayakpaul/dreambooth-keras/artifacts/model/run_este2e4c_model/v0/files). 
+    Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). If you specify `--log_wandb`, then it will perform inference with the DreamBoothed model parameters and log the generated images to `wandb` alongside the training metrics and the model checkpoints as [artifacts](https://docs.wandb.ai/guides/artifacts). [Here's](https://wandb.ai/geekyrakshit/dreambooth-keras/runs/h0kdq2dw) an example `wandb` run where you can find the generated images as well as the [model checkpoints](https://wandb.ai/geekyrakshit/dreambooth-keras/artifacts/model/run_h0kdq2dw_model/edc86adbacb60ef53b87/files). 
 
 ## Inference
 

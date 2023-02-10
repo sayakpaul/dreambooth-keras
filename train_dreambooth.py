@@ -125,7 +125,7 @@ def parse_args():
         nargs="+",
         default=None,
         type=str,
-        help="Prompts to generate samples for validation purposes.",
+        help="Prompts to generate samples for validation purposes and logging on Weights & Biases",
     )
     parser.add_argument(
         "--num_images_to_generate",
