@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.experimental.numpy as tnp
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
 
-from src.constants import MAX_PROMPT_LENGTH
+from .constants import MAX_PROMPT_LENGTH
 
 
 class DreamBoothTrainer(tf.keras.Model):

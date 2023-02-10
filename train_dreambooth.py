@@ -16,11 +16,11 @@ from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
-from src import utils
-from src.constants import MAX_PROMPT_LENGTH
-from src.datasets import DatasetUtils
-from src.dreambooth_trainer import DreamBoothTrainer
-from src.utils import QualitativeValidationCallback
+from dreambooth_keras import utils
+from dreambooth_keras.constants import MAX_PROMPT_LENGTH
+from dreambooth_keras.datasets import DatasetUtils
+from dreambooth_keras.dreambooth_trainer import DreamBoothTrainer
+from dreambooth_keras.utils import QualitativeValidationCallback
 
 import wandb
 from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
