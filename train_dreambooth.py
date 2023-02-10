@@ -172,10 +172,8 @@ def run(args):
     )
     callbacks = (
         [
-            WandbMetricsLogger(),
-            WandbModelCheckpoint(
-                ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
-            ),
+            WandbMetricsLogger(log_freq="batch"),
+            WandbModelCheckpoint(ckpt_path_prefix, save_weights_only=True),
             QualitativeValidationCallback(
                 img_heigth=args.img_resolution,
                 img_width=args.img_resolution,
@@ -194,7 +192,6 @@ def run(args):
     train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
 
     if args.log_wandb:
-        print("Logging artifacts...")
         ckpt_paths = [dreambooth_trainer.diffusion_model_path]
         if args.train_text_encoder:
             ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
@@ -204,7 +201,6 @@ def run(args):
             img_width=args.img_resolution,
             prompt=default_validation_prompt,
         )
-        utils.save_ckpts(ckpt_paths)
         wandb.finish()
 
 
