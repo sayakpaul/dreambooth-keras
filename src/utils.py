@@ -32,15 +32,6 @@ def log_images(ckpt_paths, img_heigth, img_width, prompt, num_imgs_to_gen=5):
     )
 
 
-def save_ckpts(ckpt_paths):
-    """Saves model checkpoints as WandB artifacts."""
-    print(f"Serializing the following checkpoints: \n {ckpt_paths}")
-    model_artifact = wandb.Artifact(f"run_{wandb.run.id}_model", type="model")
-    for ckpt_path in ckpt_paths:
-        model_artifact.add_file(ckpt_path)
-    wandb.log_artifact(model_artifact, aliases=[f"run_{wandb.run.id}"])
-
-
 class QualitativeValidationCallback(tf.keras.callbacks.Callback):
     def __init__(
         self,
