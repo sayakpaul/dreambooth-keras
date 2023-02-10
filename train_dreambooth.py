@@ -12,6 +12,8 @@ import tensorflow as tf
 from keras_cv.models.stable_diffusion.diffusion_model import DiffusionModel
 from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
+
+import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from src import utils
@@ -98,6 +100,7 @@ def parse_args():
     parser.add_argument("--class_category", default="dog", type=str)
     parser.add_argument("--img_resolution", default=512, type=int)
     # Optimization hyperparameters.
+    parser.add_argument("--seed", default=42, type=int)
     parser.add_argument("--lr", default=5e-6, type=float)
     parser.add_argument("--wd", default=1e-2, type=float)
     parser.add_argument("--beta_1", default=0.9, type=float)
@@ -141,7 +144,9 @@ def run(args):
     run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     if args.log_wandb:
         wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
-        using_wandb = True
+    
+    # Set random seed for reproducibility
+    tf.keras.utils.set_random_seed(args.seed)
 
     if args.mp:
         print("Enabling mixed-precision...")
