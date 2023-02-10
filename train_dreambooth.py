@@ -173,7 +173,9 @@ def run(args):
     callbacks = (
         [
             WandbMetricsLogger(log_freq="batch"),
-            WandbModelCheckpoint(ckpt_path_prefix, save_weights_only=True),
+            WandbModelCheckpoint(
+                ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
+            ),
             QualitativeValidationCallback(
                 img_heigth=args.img_resolution,
                 img_width=args.img_resolution,
@@ -185,7 +187,9 @@ def run(args):
         ]
         if args.log_wandb
         else [
-            tf.keras.callbacks.ModelCheckpoint(ckpt_path_prefix, save_weights_only=True)
+            tf.keras.callbacks.ModelCheckpoint(
+                ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
+            )
         ]
     )
 
