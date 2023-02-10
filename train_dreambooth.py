@@ -16,11 +16,11 @@ from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
-from dreambooth_keras import utils
-from dreambooth_keras.constants import MAX_PROMPT_LENGTH
-from dreambooth_keras.datasets import DatasetUtils
-from dreambooth_keras.dreambooth_trainer import DreamBoothTrainer
-from dreambooth_keras.utils import QualitativeValidationCallback
+from src import utils
+from src.constants import MAX_PROMPT_LENGTH
+from src.datasets import DatasetUtils
+from src.dreambooth_trainer import DreamBoothTrainer
+from src.utils import QualitativeValidationCallback
 
 import wandb
 from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
@@ -28,9 +28,7 @@ from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
-def get_optimizer(
-    lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08
-):
+def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08):
     """Instantiates the AdamW optimizer."""
 
     optimizer = tf.keras.optimizers.experimental.AdamW(
@@ -51,9 +49,7 @@ def prepare_trainer(
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
-        diffusion_model=DiffusionModel(
-            img_resolution, img_resolution, MAX_PROMPT_LENGTH
-        ),
+        diffusion_model=DiffusionModel(img_resolution, img_resolution, MAX_PROMPT_LENGTH),
         # Remove the top layer from the encoder, which cuts off
         # the variance and only returns the mean.
         vae=tf.keras.Model(
@@ -78,6 +74,7 @@ def train(dreambooth_trainer, train_dataset, max_train_steps, callbacks):
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
+    
     dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=callbacks)
 
 
@@ -119,9 +116,7 @@ def parse_args():
     )
     # Misc.
     parser.add_argument(
-        "--log_wandb",
-        action="store_true",
-        help="Whether to use Weights & Biases for experiment tracking.",
+        "--log_wandb", action="store_true", help="Whether to use Weights & Biases for experiment tracking.",
     )
     parser.add_argument(
         "--validation_prompts",
@@ -141,12 +136,12 @@ def parse_args():
 
 
 def run(args):
+    # Set random seed for reproducibility
+    tf.keras.utils.set_random_seed(args.seed)
+    
     run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     if args.log_wandb:
         wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
-    
-    # Set random seed for reproducibility
-    tf.keras.utils.set_random_seed(args.seed)
 
     if args.mp:
         print("Enabling mixed-precision...")

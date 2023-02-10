@@ -1,0 +1,7 @@
+keras_cv==0.4.0
+tensorflow>=2.10.0
+tensorflow_datasets>=4.8.1
+pillow==9.4.0
+wandb>=0.13.9
+imutils
+opencv-python

@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.experimental.numpy as tnp
 from keras_cv.models.stable_diffusion.text_encoder import TextEncoder
 
-from .constants import MAX_PROMPT_LENGTH
+from src.constants import MAX_PROMPT_LENGTH
 
 
 class DreamBoothTrainer(tf.keras.Model):
@@ -117,9 +117,7 @@ class DreamBoothTrainer(tf.keras.Model):
     def get_timestep_embedding(self, timestep, dim=320, max_period=10000):
         half = dim // 2
         log_max_preiod = tf.math.log(tf.cast(max_period, tf.float32))
-        freqs = tf.math.exp(
-            -log_max_preiod * tf.range(0, half, dtype=tf.float32) / half
-        )
+        freqs = tf.math.exp(-log_max_preiod * tf.range(0, half, dtype=tf.float32) / half)
         args = tf.convert_to_tensor([timestep], dtype=tf.float32) * freqs
         embedding = tf.concat([tf.math.cos(args), tf.math.sin(args)], 0)
         return embedding
@@ -133,9 +131,7 @@ class DreamBoothTrainer(tf.keras.Model):
 
     def compute_loss(self, target, model_pred):
         # Chunk the noise and model_pred into two parts and compute the loss on each part separately.
-        model_pred, model_pred_prior = tf.split(
-            model_pred, num_or_size_splits=2, axis=0
-        )
+        model_pred, model_pred_prior = tf.split(model_pred, num_or_size_splits=2, axis=0)
         target, target_prior = tf.split(target, num_or_size_splits=2, axis=0)
 
         # Compute instance loss.
