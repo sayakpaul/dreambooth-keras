@@ -15,7 +15,7 @@ By loading this model you accept the CreativeML Open RAIL-M license at https://r
 If you're just looking for the accompanying resources of this repository, here are the links:
 
 * [Inference Colab Notebook](https://colab.research.google.com/github/sayakpaul/dreambooth-keras/blob/main/notebooks/inference_dreambooth.ipynb)
-* [Blog post on keras.io] (upcoming)
+* [Blog post on keras.io](https://keras.io/examples/generative/dreambooth/)
 * [Fine-tuned model weights](https://huggingface.co/chansung/dreambooth-dog)
 
 ### Table of contents
