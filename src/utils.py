@@ -1,3 +1,5 @@
+from glob import glob
+
 import keras_cv
 from typing import List
 
@@ -7,6 +9,7 @@ from tqdm.auto import tqdm
 import tensorflow as tf
 
 import wandb
+from wandb.keras import WandbModelCheckpoint
 
 
 def log_images(ckpt_paths, img_heigth, img_width, prompts, num_imgs_to_gen=5):
@@ -54,7 +57,7 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         print(f"Performing inference for logging generated images for epoch {epoch}...")
         print(f"Number of images to generate: {self.num_imgs_to_gen}")
-        
+
         # load weights to stable diffusion model
         self.sd_model.diffusion_model.set_weights(
             self.model.diffusion_model.get_weights()
@@ -63,7 +66,7 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
             self.sd_model.text_encoder.set_weights(
                 self.model.text_encoder.get_weights()
             )
-        
+
         for prompt in self.prompts:
             images_dreamboothed = self.sd_model.text_to_image(
                 prompt, batch_size=self.num_imgs_to_gen
@@ -76,3 +79,14 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
 
     def on_train_end(self, logs=None):
         wandb.log({"validation-table": self.wandb_table})
+
+
+class DreamBoothCheckpointCallback(WandbModelCheckpoint):
+    def __init__(self, filepath, *args, **kwargs) -> None:
+        super().__init__(filepath, *args, **kwargs)
+
+    def _log_ckpt_as_artifact(self, filepath: str, aliases) -> None:
+        model_artifact = wandb.Artifact(f"run_{wandb.run.id}_model", type="model")
+        for file in glob(f"{filepath}*.h5"):
+            model_artifact.add_file(file)
+        wandb.log_artifact(model_artifact, aliases=aliases or [])

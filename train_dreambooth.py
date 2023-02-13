@@ -20,10 +20,10 @@ from src import utils
 from src.constants import MAX_PROMPT_LENGTH
 from src.datasets import DatasetUtils
 from src.dreambooth_trainer import DreamBoothTrainer
-from src.utils import QualitativeValidationCallback
+from src.utils import QualitativeValidationCallback, DreamBoothCheckpointCallback
 
 import wandb
-from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint
+from wandb.keras import WandbMetricsLogger
 
 
 # These hyperparameters come from this tutorial by Hugging Face:
@@ -174,7 +174,7 @@ def run(args):
     callbacks = (
         [
             WandbMetricsLogger(log_freq="batch"),
-            WandbModelCheckpoint(
+            DreamBoothCheckpointCallback(
                 ckpt_path_prefix, save_weights_only=True, monitor="loss", mode="min"
             ),
             QualitativeValidationCallback(
