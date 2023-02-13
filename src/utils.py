@@ -19,11 +19,11 @@ def log_images(ckpt_paths, img_heigth, img_width, prompts, num_imgs_to_gen=5):
     if len(ckpt_paths) > 1:
         sd_model.text_encoder.load_weights(ckpt_paths[1])
 
-    for prompt in prompts:
+    for prompt in tqdm(prompts):
         images_dreamboothed = sd_model.text_to_image(prompt, batch_size=num_imgs_to_gen)
         wandb.log(
             {
-                "validation": [
+                f"validation/Prompt: {prompt}": [
                     wandb.Image(PIL.Image.fromarray(image), caption=f"{i}: {prompt}")
                     for i, image in enumerate(images_dreamboothed)
                 ]
@@ -52,6 +52,10 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
         self.wandb_table = wandb.Table(columns=["epoch", "prompt", "images"])
 
     def on_epoch_end(self, epoch, logs=None):
+        print(f"Performing inference for logging generated images for epoch {epoch}...")
+        print(f"Number of images to generate: {self.num_imgs_to_gen}")
+        
+        # load weights to stable diffusion model
         self.sd_model.diffusion_model.set_weights(
             self.model.diffusion_model.get_weights()
         )
@@ -59,6 +63,7 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
             self.sd_model.text_encoder.set_weights(
                 self.model.text_encoder.get_weights()
             )
+        
         for prompt in self.prompts:
             images_dreamboothed = self.sd_model.text_to_image(
                 prompt, batch_size=self.num_imgs_to_gen
