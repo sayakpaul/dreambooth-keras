@@ -142,7 +142,7 @@ def run(args):
     validation_prompts = [f"A photo of {args.unique_id} {args.class_category} in a bucket"]
     if args.validation_prompts is not None:
         validation_prompts += args.validation_prompts
-    
+
     run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     if args.log_wandb:
         wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
@@ -171,22 +171,28 @@ def run(args):
         args.img_resolution, args.train_text_encoder, args.mp
     )
 
-    callbacks = (
-        [
-            WandbMetricsLogger(log_freq="batch"),
-            DreamBoothCheckpointCallback(ckpt_path_prefix, save_weights_only=True),
+    callbacks = []
+    if args.log_wandb:
+        # log training metrics to Weights & Biases
+        callbacks.append(WandbMetricsLogger(log_freq="batch"))
+        # log model checkpoints to Weights & Biases as artifacts
+        callbacks.append(
+            DreamBoothCheckpointCallback(ckpt_path_prefix, save_weights_only=True)
+        )
+        # perform inference on validation prompts at the end of every epoch and
+        # log the resuts to a Weights & Biases table
+        callbacks.append(
             QualitativeValidationCallback(
                 img_heigth=args.img_resolution,
                 img_width=args.img_resolution,
                 prompts=validation_prompts,
                 num_imgs_to_gen=args.num_images_to_generate,
-            ),
-        ]
-        if args.log_wandb
-        else [
+            )
+        )
+    else:
+        callbacks.append(
             tf.keras.callbacks.ModelCheckpoint(ckpt_path_prefix, save_weights_only=True)
-        ]
-    )
+        )
 
     train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
 
