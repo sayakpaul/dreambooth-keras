@@ -9,21 +9,28 @@ import argparse
 import math
 
 import tensorflow as tf
-import wandb
 from keras_cv.models.stable_diffusion.diffusion_model import DiffusionModel
 from keras_cv.models.stable_diffusion.image_encoder import ImageEncoder
 from keras_cv.models.stable_diffusion.noise_scheduler import NoiseScheduler
+
+import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
 from src import utils
 from src.constants import MAX_PROMPT_LENGTH
 from src.datasets import DatasetUtils
 from src.dreambooth_trainer import DreamBoothTrainer
+from src.utils import QualitativeValidationCallback, DreamBoothCheckpointCallback
+
+import wandb
+from wandb.keras import WandbMetricsLogger
 
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
-def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08):
+def get_optimizer(
+    lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08
+):
     """Instantiates the AdamW optimizer."""
 
     optimizer = tf.keras.optimizers.experimental.AdamW(
@@ -44,7 +51,9 @@ def prepare_trainer(
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
-        diffusion_model=DiffusionModel(img_resolution, img_resolution, MAX_PROMPT_LENGTH),
+        diffusion_model=DiffusionModel(
+            img_resolution, img_resolution, MAX_PROMPT_LENGTH
+        ),
         # Remove the top layer from the encoder, which cuts off
         # the variance and only returns the mean.
         vae=tf.keras.Model(
@@ -64,19 +73,13 @@ def prepare_trainer(
     return dreambooth_trainer
 
 
-def train(dreambooth_trainer, train_dataset, ckpt_path_prefix, max_train_steps):
+def train(dreambooth_trainer, train_dataset, max_train_steps, callbacks):
     """Performs DreamBooth training `DreamBoothTrainer` with the given `train_dataset`."""
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
 
-    ckpt_callback = tf.keras.callbacks.ModelCheckpoint(
-        ckpt_path_prefix,
-        save_weights_only=True,
-        monitor="loss",
-        mode="min",
-    )
-    dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=[ckpt_callback])
+    dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=callbacks)
 
 
 def parse_args():
@@ -98,6 +101,7 @@ def parse_args():
     parser.add_argument("--class_category", default="dog", type=str)
     parser.add_argument("--img_resolution", default=512, type=int)
     # Optimization hyperparameters.
+    parser.add_argument("--seed", default=42, type=int)
     parser.add_argument("--lr", default=5e-6, type=float)
     parser.add_argument("--wd", default=1e-2, type=float)
     parser.add_argument("--beta_1", default=0.9, type=float)
@@ -116,19 +120,37 @@ def parse_args():
     )
     # Misc.
     parser.add_argument(
-        "--log_wandb", action="store_true", help="Whether to use mixed-precision."
+        "--log_wandb", action="store_true", help="Whether to use Weights & Biases for experiment tracking.",
     )
     parser.add_argument(
-        "--validation_prompt",
+        "--validation_prompts",
+        nargs="+",
         default=None,
         type=str,
-        help="Prompt to generate samples for validation purposes.",
+        help="Prompts to generate samples for validation purposes and logging on Weights & Biases",
+    )
+    parser.add_argument(
+        "--num_images_to_generate",
+        default=5,
+        type=int,
+        help="Number of validation image to generate per prompt.",
     )
 
     return parser.parse_args()
 
 
 def run(args):
+    # Set random seed for reproducibility
+    tf.keras.utils.set_random_seed(args.seed)
+
+    validation_prompts = [f"A photo of {args.unique_id} {args.class_category} in a bucket"]
+    if args.validation_prompts is not None:
+        validation_prompts = args.validation_prompts
+
+    run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
+    if args.log_wandb:
+        wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
+
     if args.mp:
         print("Enabling mixed-precision...")
         policy = mixed_precision.Policy("mixed_float16")
@@ -148,32 +170,33 @@ def run(args):
     train_dataset = data_util.prepare_datasets()
 
     print("Initializing trainer...")
-    ckpt_path_prefix = (
-        run_name
-    ) = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
+    ckpt_path_prefix = run_name
     dreambooth_trainer = prepare_trainer(
         args.img_resolution, args.train_text_encoder, args.mp
     )
-    train(dreambooth_trainer, train_dataset, ckpt_path_prefix, args.max_train_steps)
+
+    callbacks = [
+        # save model checkpoint and optionally log model checkpoints to
+        # Weights & Biases as artifacts
+        DreamBoothCheckpointCallback(ckpt_path_prefix, save_weights_only=True)
+    ]
+    if args.log_wandb:
+        # log training metrics to Weights & Biases
+        callbacks.append(WandbMetricsLogger(log_freq="batch"))
+        # perform inference on validation prompts at the end of every epoch and
+        # log the resuts to a Weights & Biases table
+        callbacks.append(
+            QualitativeValidationCallback(
+                img_heigth=args.img_resolution,
+                img_width=args.img_resolution,
+                prompts=validation_prompts,
+                num_imgs_to_gen=args.num_images_to_generate,
+            )
+        )
+
+    train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
 
     if args.log_wandb:
-        print("Logging artifacts...")
-        wandb.init(project="dreambooth-keras", name=run_name, config=vars(args))
-        if args.validation_prompt is None:
-            args.validation_prompt = (
-                f"A photo of {args.unique_id} {args.class_category} in a bucket"
-            )
-
-        ckpt_paths = [dreambooth_trainer.diffusion_model_path]
-        if args.train_text_encoder:
-            ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
-        utils.log_images(
-            ckpt_paths,
-            img_heigth=args.img_resolution,
-            img_width=args.img_resolution,
-            prompt=args.validation_prompt,
-        )
-        utils.save_ckpts(ckpt_paths)
         wandb.finish()
 
 
