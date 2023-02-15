@@ -82,11 +82,21 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
 
 
 class DreamBoothCheckpointCallback(WandbModelCheckpoint):
-    def __init__(self, filepath, *args, **kwargs) -> None:
-        super().__init__(filepath, *args, **kwargs)
+    def __init__(
+        self, filepath, save_weights_only: bool = False, *args, **kwargs
+    ) -> None:
+        super(DreamBoothCheckpointCallback.__bases__[0], self).__init__(
+            filepath, save_weights_only=save_weights_only, *args, **kwargs
+        )
+        self.save_weights_only = save_weights_only
+        # User-friendly warning when trying to save the best model.
+        if self.save_best_only:
+            self._check_filepath()
+        self._is_old_tf_keras_version = None
 
     def _log_ckpt_as_artifact(self, filepath: str, aliases) -> None:
-        model_artifact = wandb.Artifact(f"run_{wandb.run.id}_model", type="model")
-        for file in glob(f"{filepath}*.h5"):
-            model_artifact.add_file(file)
-        wandb.log_artifact(model_artifact, aliases=aliases or [])
+        if wandb.run is not None:
+            model_artifact = wandb.Artifact(f"run_{wandb.run.id}_model", type="model")
+            for file in glob(f"{filepath}*.h5"):
+                model_artifact.add_file(file)
+            wandb.log_artifact(model_artifact, aliases=aliases or [])

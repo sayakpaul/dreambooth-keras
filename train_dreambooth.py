@@ -28,7 +28,9 @@ from wandb.keras import WandbMetricsLogger
 
 # These hyperparameters come from this tutorial by Hugging Face:
 # https://github.com/huggingface/diffusers/tree/main/examples/dreambooth
-def get_optimizer(lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08):
+def get_optimizer(
+    lr=5e-6, beta_1=0.9, beta_2=0.999, weight_decay=(1e-2,), epsilon=1e-08
+):
     """Instantiates the AdamW optimizer."""
 
     optimizer = tf.keras.optimizers.experimental.AdamW(
@@ -49,7 +51,9 @@ def prepare_trainer(
     image_encoder = ImageEncoder(img_resolution, img_resolution)
 
     dreambooth_trainer = DreamBoothTrainer(
-        diffusion_model=DiffusionModel(img_resolution, img_resolution, MAX_PROMPT_LENGTH),
+        diffusion_model=DiffusionModel(
+            img_resolution, img_resolution, MAX_PROMPT_LENGTH
+        ),
         # Remove the top layer from the encoder, which cuts off
         # the variance and only returns the mean.
         vae=tf.keras.Model(
@@ -74,7 +78,7 @@ def train(dreambooth_trainer, train_dataset, max_train_steps, callbacks):
     num_update_steps_per_epoch = train_dataset.cardinality()
     epochs = math.ceil(max_train_steps / num_update_steps_per_epoch)
     print(f"Training for {epochs} epochs.")
-    
+
     dreambooth_trainer.fit(train_dataset, epochs=epochs, callbacks=callbacks)
 
 
@@ -141,7 +145,7 @@ def run(args):
 
     validation_prompts = [f"A photo of {args.unique_id} {args.class_category} in a bucket"]
     if args.validation_prompts is not None:
-        validation_prompts += args.validation_prompts
+        validation_prompts = args.validation_prompts
 
     run_name = f"lr@{args.lr}-max_train_steps@{args.max_train_steps}-train_text_encoder@{args.train_text_encoder}"
     if args.log_wandb:
@@ -171,14 +175,14 @@ def run(args):
         args.img_resolution, args.train_text_encoder, args.mp
     )
 
-    callbacks = []
+    callbacks = [
+        # save model checkpoint and optionally log model checkpoints to
+        # Weights & Biases as artifacts
+        DreamBoothCheckpointCallback(ckpt_path_prefix, save_weights_only=True)
+    ]
     if args.log_wandb:
         # log training metrics to Weights & Biases
         callbacks.append(WandbMetricsLogger(log_freq="batch"))
-        # log model checkpoints to Weights & Biases as artifacts
-        callbacks.append(
-            DreamBoothCheckpointCallback(ckpt_path_prefix, save_weights_only=True)
-        )
         # perform inference on validation prompts at the end of every epoch and
         # log the resuts to a Weights & Biases table
         callbacks.append(
@@ -188,10 +192,6 @@ def run(args):
                 prompts=validation_prompts,
                 num_imgs_to_gen=args.num_images_to_generate,
             )
-        )
-    else:
-        callbacks.append(
-            tf.keras.callbacks.ModelCheckpoint(ckpt_path_prefix, save_weights_only=True)
         )
 
     train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
