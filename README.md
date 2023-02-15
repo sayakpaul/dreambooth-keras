@@ -61,7 +61,25 @@ prior-preservation loss helps the model to slowly adapt to the new concept under
 
     You can also fine-tune the text encoder by specifying the `--train_text_encoder` option. 
 
-    Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). If you specify `--log_wandb`, then it will perform inference with the DreamBoothed model parameters and log the generated images to `wandb` alongside the training metrics and the model checkpoints as [artifacts](https://docs.wandb.ai/guides/artifacts). [Here's](https://wandb.ai/sayakpaul/dreambooth-keras/runs/este2e4c) an example `wandb` run where you can find the generated images as well as the [model checkpoints](https://wandb.ai/sayakpaul/dreambooth-keras/artifacts/model/run_este2e4c_model/v0/files). You can also add multiple validation prompts based on which the model is validated qualitatively in an epoch-wise manner and the results are logged to a [Weights & Biases table](https://docs.wandb.ai/guides/data-vis) like [this](https://wandb.ai/geekyrakshit/dreambooth-keras/runs/huou7nzr) `wandb` run.
+    Additionally, the script supports integration with [Weights and Biases (`wandb`)](https://wandb.ai/). If you specify `--log_wandb`,
+    - it will automatically log the training metrics to your `wandb` dashboard using the [`WandbMetricsLogger` callback](https://docs.wandb.ai/guides/integrations/keras#experiment-tracking-with-wandbmetricslogger).
+    - it will also upload your model checkpoints at the end of each epoch to your `wandb` project as an [artifacts](https://docs.wandb.ai/guides/artifacts) for model versioning. This is done using the `DreamBoothCheckpointCallback` which was built using [`WandbModelCheckpoint` callback](https://docs.wandb.ai/guides/integrations/keras#model-checkpointing-using-wandbmodelcheckpoint).
+    - it will also perform inference with the DreamBoothed model parameters at the end of each epoch and log them into a [`wandb.Table`](https://docs.wandb.ai/guides/data-vis) in your `wandb` dashboard. This is done using the `QualitativeValidationCallback`, which also logs generated images into a media panel on your `wandb` dashboard at the end of the training.
+
+    Here's a command that launches training and logs training metrics and generated images to your Weights & Biases workspace:
+
+    ```bash
+    python train_dreambooth.py \
+      --log_wandb \
+      --validation_prompts \
+        "a photo of sks dog with a cat" \
+        "a photo of sks dog riding a bicycle" \
+        "a photo of sks dog peeing" \
+        "a photo of sks dog playing cricket" \
+        "a photo of sks dog as an astronaut"
+    ```
+
+    [Here's](https://wandb.ai/geekyrakshit/dreambooth-keras/runs/huou7nzr) an example `wandb` run where you can find the generated images as well as the [model checkpoints](https://wandb.ai/geekyrakshit/dreambooth-keras/artifacts/model/run_huou7nzr_model).
 
 ## Inference
 
