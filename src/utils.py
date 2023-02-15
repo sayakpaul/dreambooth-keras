@@ -4,34 +4,11 @@ import keras_cv
 from typing import List
 
 import PIL
-from tqdm.auto import tqdm
 
 import tensorflow as tf
 
 import wandb
 from wandb.keras import WandbModelCheckpoint
-
-
-def log_images(ckpt_paths, img_heigth, img_width, prompts, num_imgs_to_gen=5):
-    """Logs generated images to WandB for qualitative validation."""
-    print("Performing inference for logging generated images...")
-    print(f"Number of images to generate: {num_imgs_to_gen}")
-
-    sd_model = keras_cv.models.StableDiffusion(img_height=img_heigth, img_width=img_width)
-    sd_model.diffusion_model.load_weights(ckpt_paths[0])
-    if len(ckpt_paths) > 1:
-        sd_model.text_encoder.load_weights(ckpt_paths[1])
-
-    for prompt in tqdm(prompts):
-        images_dreamboothed = sd_model.text_to_image(prompt, batch_size=num_imgs_to_gen)
-        wandb.log(
-            {
-                f"validation/Prompt: {prompt}": [
-                    wandb.Image(PIL.Image.fromarray(image), caption=f"{i}: {prompt}")
-                    for i, image in enumerate(images_dreamboothed)
-                ]
-            }
-        )
 
 
 class QualitativeValidationCallback(tf.keras.callbacks.Callback):
@@ -79,6 +56,18 @@ class QualitativeValidationCallback(tf.keras.callbacks.Callback):
 
     def on_train_end(self, logs=None):
         wandb.log({"validation-table": self.wandb_table})
+        print("Performing inference on train end for logging generated images...")
+        print(f"Number of images to generate: {self.num_imgs_to_gen}")
+        for prompt in self.prompts:
+            images_dreamboothed = self.sd_model.text_to_image(prompt, batch_size=self.num_imgs_to_gen)
+            wandb.log(
+                {
+                    f"validation/Prompt: {prompt}": [
+                        wandb.Image(PIL.Image.fromarray(image), caption=f"{i}: {prompt}")
+                        for i, image in enumerate(images_dreamboothed)
+                    ]
+                }
+            )
 
 
 class DreamBoothCheckpointCallback(WandbModelCheckpoint):

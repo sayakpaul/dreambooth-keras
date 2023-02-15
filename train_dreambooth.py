@@ -197,15 +197,6 @@ def run(args):
     train(dreambooth_trainer, train_dataset, args.max_train_steps, callbacks)
 
     if args.log_wandb:
-        ckpt_paths = [dreambooth_trainer.diffusion_model_path]
-        if args.train_text_encoder:
-            ckpt_paths.append(dreambooth_trainer.text_encoder_model_path)
-        utils.log_images(
-            ckpt_paths,
-            img_heigth=args.img_resolution,
-            img_width=args.img_resolution,
-            prompts=validation_prompts,
-        )
         wandb.finish()
 
 
