@@ -27,6 +27,8 @@ If you're just looking for the accompanying resources of this repository, here a
 * [Notes](#notes-on-preparing-data-for-dreambooth-training-of-faces)
 * [Acknowledgements](#acknowledgements)
 
+**Update 15/02/2023**: Thanks to [Soumik Rakshit](https://in.linkedin.com/in/soumikrakshit); we now have better utilities to support Weights and Biases (see https://github.com/sayakpaul/dreambooth-keras/pull/22).
+
 ## Steps to perform DreamBooth training using the codebase
 
 1. Install the pre-requisites: `pip install -r requirements.txt`.
